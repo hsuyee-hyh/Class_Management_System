@@ -143,9 +143,6 @@ export default function Register() {
                         >
                             <option value="Student">Student</option>
                             <option value="Teacher">Teacher</option>
-                            <option value="Administrator">
-                                Administrator
-                            </option>
                         </select>
 
                         <label htmlFor="phone" className="">
@@ -183,16 +180,6 @@ export default function Register() {
                         </button>
                     </div>
                 </form>
-                <p className="mt-2">
-                    Don't have account?{" "}
-                    <a
-                        href="/register"
-                        className="border-b-3 border-b-blue-600 text-blue-500 font-bold
-                hover:text-blue-700"
-                    >
-                        Register
-                    </a>
-                </p>
             </div>
         </>
     );

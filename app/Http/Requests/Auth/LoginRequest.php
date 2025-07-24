@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class LoginRequest extends FormRequest
 {
@@ -39,13 +41,26 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
+        $error = [];
+
         $this->ensureIsNotRateLimited();
+
+        $user = User::where('email', $this->input('email'))->first();
+        Log::info('User email', ['user status' => $user]);
+        if (!$user) {
+            $error['email'] = "Email not Found.";
+            Log::error('emailMatch', ['emailMatch' => $error['email']]);
+        }
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            $error['password']="Password doesn't match.";
+
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => isset($error['email'])? $error['email'] : "",
+                'password' => isset($error['password'])? $error['password'] : "",
+                // 'email' => trans('auth.failed'),
             ]);
         }
 
@@ -80,6 +95,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }
