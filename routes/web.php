@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Home', [
+    return Inertia::render('Home/Home', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
@@ -18,9 +18,12 @@ Route::get('/', function () {
 });
 
 Route::get('/', function () {
-    return Inertia::render('Home');
+    return Inertia::render('Home/Home');
 })->middleware(['auth', 'verified'])->name('home');
 
+Route::get('/course', function () {
+    return Inertia::render('Course');
+})->middleware(['auth', 'verified'])->name('course');
 
 // reset password
 Route::get('/forgot-password', function () {
