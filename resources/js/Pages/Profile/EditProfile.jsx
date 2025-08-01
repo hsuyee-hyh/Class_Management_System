@@ -3,7 +3,7 @@ import { useForm, usePage } from "@inertiajs/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 
-export default function EditProfile({ auth, my_custom_prop }) {
+export default function EditProfile({auth }) {
     const { user } = auth;
 
     /**
@@ -40,7 +40,7 @@ export default function EditProfile({ auth, my_custom_prop }) {
     return (
         <>
             <h1 className="text-center mt-4">My Profile</h1>
-            <p className="text-center text-lg my-4">{my_custom_prop}</p>
+            {/* <p className="text-center text-lg my-4">{my_custom_prop}</p> */}
             <form encType="multipart/form-data">
                 <div className="flex flex-col justify-center items-center w-full p-3 mb-4">
                     {/* edit photo */}

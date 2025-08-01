@@ -3,7 +3,7 @@ import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -14,6 +14,19 @@ export default function AuthenticatedLayout({ header, children }) {
     const { component } = usePage();
 
     const [activeLink, setActiveLink] = useState("Home/Home");
+    const [initials, setInitials] = useState(null);
+
+    useEffect(() => {
+        if (user.fullname) {
+            const parts = user.fullname
+                .split(" ")
+                .filter(Boolean) // remove extra space
+                .slice(0, 2)
+                .map((word) => word[0].toUpperCase());
+
+            setInitials(parts.join("") || "NA");
+        }
+    }, [user.fullname]);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -68,12 +81,19 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 text-sm font-medium leading-4 text-gray-500 
                                                 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                <img
-                                                    src="storage/photos/54tjL0kYFWOtAuBCjekLmLTsyoE3Ai3j39XlEEkI.jpg"
-                                                    alt="profile"
-                                                    className="w-8 h-8 rounded-full mr-2"
-                                                />
-                                                {user.username}
+                                                {!user.photo && (
+                                                    <div className="relative w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold text-gray-600 mr-3">
+                                                        {initials}
+                                                    </div>
+                                                )}
+                                                {user.photo && (
+                                                    <img
+                                                        src={`storage/${user.photo}`}
+                                                        alt=""
+                                                        className="w-8 h-8 rounded-full mr-2"
+                                                    />
+                                                )}
+                                                {user.fullname}
 
                                                 {/* profile svg  */}
                                                 {/* <svg

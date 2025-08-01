@@ -6,15 +6,24 @@ import { Link, useForm } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import { Flex, Progress } from "antd";
 
-export default function Login({ status }) {
-    const [percent, setPercent] = useState(0);
-    const [intervalId, setIntervalId] = useState(null);
+export default function Login({ status, loginError }) {
+    const [visible, setVisible] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
         password: "",
         rememberme: false,
     });
+
+    useEffect(() => {
+        if (loginError) {
+            setVisible
+            const timer = setTimeout(() => {
+                setVisible(false);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [loginError]);
 
     function handleChange(event) {
         const key = event.target.name;
@@ -36,21 +45,19 @@ export default function Login({ status }) {
 
     return (
         <>
-            {/* {processing && ( */}
-            {/* // <div className="flex justify-center items-center"> */}
-            {/* <div type="button" class="bg-yellow-100 w-full max-h-20 mx-20 my-4 p-4"> */}
-            {/* <span className="text-center">Loading...</span> */}
-            {/* </div> */}
-            {/* </div> */}
-            {/* // )} */}
-
-            {status && (
-                <div className="bg-green-100 text-green-700 px-4 py-2 rounded m-10">
-                    {status}
-                </div>
-            )}
             <AccountLayout>
                 <ApplicationLogo></ApplicationLogo>
+                <div className="relative">
+                    {visible && loginError && (
+                        <div
+                            className="absolute left-1/3 z-10 p-3 px-10 bg-green-100 text-green-700 py-2 rounded
+                        transition-opacity ease-out duration-100"
+                        >
+                            {loginError}
+                        </div>
+                    )}
+                   
+                </div>
                 <h1 className="text-2xl font-bold mb-4">
                     Login to your Account
                 </h1>

@@ -51,9 +51,9 @@ Route::get('/reset-password/{token}', function (string $token) {
 Route::middleware('auth')->group(function () {
     Route::get('/profile/edit-password', [PasswordController::class, 'edit'])->name('profile.editPassword');
     Route::patch('/profile/edit-password', [PasswordController::class, 'update'])->name('profile.updatePassword');
-    // Route::get('/profile', [ProfileController::class, 'editPassword'])->name('profile.editPassword');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
 });

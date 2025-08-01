@@ -40,13 +40,13 @@ class RegisteredUserController extends Controller
         try {
             $user = $this->registerUserService->register($request->all());
             Auth::login($user);
-            return redirect(route('home', absolute: false))->with(["RegisterationSuccess"=> "Registeration Success!"]);
+            return redirect(route('login', absolute: false));
         } catch (\Exception $e) {
             Log::error("Registration error: " . $e->getMessage());
             return redirect()
                     ->back()
                     ->withErrors([
-                        'registrationError' => 'Registration failed. Please try again later.'
+                        'registerationError' => 'Registration failed. Please try again later.'
                     ]);
         }
     }

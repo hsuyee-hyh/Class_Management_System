@@ -1,5 +1,5 @@
-import { router, useForm, Link } from "@inertiajs/react";
-import { useState } from "react";
+import { router, useForm, Link, usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 import FileInput from "@/Components/Form/FileInput";
 import Selection from "@/Components/Form/Selection";
 import TextInput from "@/Components/Form/TextInput";
@@ -9,7 +9,7 @@ import FormButton from "@/Components/Form/FormButton";
 import { Alert } from "antd";
 
 export default function Register() {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         fullname: "",
         username: "",
         email: "",
@@ -21,6 +21,19 @@ export default function Register() {
     });
 
     const [selectedOption, setSelectedOption] = useState("Student");
+    const [visible, setVisible] = useState(false);
+
+    console.log("registerationError is " + errors.registerationError);
+    useEffect(() => {
+        if ( errors.registerationError) {
+            setVisible(true);
+            const timer = setTimeout(() => {
+                setVisible(false);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, errors.registerationError);
 
     function handleChange(event) {
         const key = event.target.name;
@@ -57,23 +70,24 @@ export default function Register() {
     }
     return (
         <>
-            {/* {processing && ( */}
-            {/* // <Alert */}
-            {/* // message="Loading ...." */}
-            {/* // type="success" */}
-            {/* // className="w-max-[400px] mx-auto my-4" */}
-            {/* // /> */}
+            {/* {errors.registerationError && ( */}
+                {/* // <Alert */}
+                    {/* // message="Error" */}
+                    {/* // description={errors.registerationError} */}
+                    {/* // type="error" */}
+                    {/* // showIcon */}
+                {/* // /> */}
             {/* // )} */}
+            <AccountLayout className="relative">
+                {visible && errors.registerationError && (
+                    <div
+                        className="absolute top-2 left-1/3 z-10 py-4 px-10 bg-red-200  py-2 rounded-lg
+                        transition-opacity ease-out duration-100"
+                    >
+                        { errors.registerationError}
+                    </div>
+                )}
 
-            {errors.registerationError && (
-                <Alert
-                    message="Error"
-                    description={errors.registerationError}
-                    type="error"
-                    showIcon
-                />
-            )}
-            <AccountLayout>
                 <div className="mt-4">
                     <ApplicationLogo></ApplicationLogo>
                 </div>

@@ -32,6 +32,6 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return redirect()->route('home');
+        return redirect()->route('login');
     }
 }

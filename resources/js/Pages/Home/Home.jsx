@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
     const [pageLoaded, setPageLoaded] = useState(false);
-    const [dataLoaded, setDataLoaded] = useState(false);
+    // const [dataLoaded, setDataLoaded] = useState(false);
 
     useEffect(() => {
         // Listen for full page load (images, scripts, etc.)
@@ -21,7 +21,7 @@ export default function Home() {
         return () => window.removeEventListener("load", handleLoad);
     }, []);
     
-    const loading = !(pageLoaded && dataLoaded);
+    const loading = !(pageLoaded);
 
     if (loading) {
         return (

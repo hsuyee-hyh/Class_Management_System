@@ -3,16 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Services\UserServices\ProfileService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use Exception;
+use Illuminate\Http\Client\Request as ClientRequest;
 
 class ProfileController extends Controller
 {
+
+    public function __construct(protected ProfileService $profileService) {}
     /**
      * Display the user's profile form.
      */
@@ -38,7 +44,7 @@ class ProfileController extends Controller
          * With this approach, you can just return the Inertia response
          * with the component name without needing to pass the props explicitly.
          */
-        return Inertia::render('Profile/EditProfile');
+        return Inertia::render('Profile/Profile');
     }
 
     /**
@@ -46,15 +52,20 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        try {
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+            // $request->user()->fill($request->validated());
+            // if ($request->user()->isDirty('email')) {
+            // $request->user()->email_verified_at = null;
+            // }
+            $user = $this->profileService->update($request->validated(), $request );
+            return Redirect::route('profile.edit')->with([
+                'updateProfileSuccess' => "Update Profile Success!"
+            ]);
+        } catch (Exception $e) {
+            Log::error("Update Profile Error @ProfileController: ", ["updateProfileError" => $e->getmessage()]);
+            return redirect()->back()->withErrors(["updateProfileError" => "Profile Update Failed!"]);
         }
-
-        $request->user()->save();
-
-        return Redirect::route('home');
     }
 
     /**

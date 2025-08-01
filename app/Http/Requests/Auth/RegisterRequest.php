@@ -31,7 +31,7 @@ class RegisterRequest extends FormRequest
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::defaults()],
             'phone' => 'nullable|string',
-            'photo' => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+            'photo' => 'nullable|image|max:2048',
             'role' => Rule::in([
                 UserRole::STUDENT,
                 UserRole::TEACHER

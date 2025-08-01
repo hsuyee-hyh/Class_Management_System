@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +21,7 @@ class AuthenticatedSessionController extends Controller
     {
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
-            'status' => session('status'),         
+            'status' => session('status'),
         ]);
     }
 
@@ -29,13 +30,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        try {
+            $request->authenticate();
 
-        $request->session()->regenerate();
+            $request->session()->regenerate();
 
-        return redirect()
-            ->intended(route('home',absolute: false))
-            ->with('loginSuccess', "Successfully login." );
+            return redirect()
+                ->intended(route('home', absolute: false))
+                ->with('loginSuccess', "Login Success");
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors([
+                "loginError" => "Login Failed! Please Try Again."
+            ]);
+        }
     }
 
     /**

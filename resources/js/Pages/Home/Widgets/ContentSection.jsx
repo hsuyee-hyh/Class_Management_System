@@ -1,19 +1,32 @@
 import { Carousel, Card } from "antd";
 import { ProCard } from "@ant-design/pro-components";
 import { Image, Typography, Row, Col, Pagination } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleUp, faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { usePage } from "@inertiajs/react";
 
 export default function ContentSection() {
+    const {loginSuccess, registerationSuccess} = usePage().props;
+     const { Title, Paragraph } = Typography;
     const [activeIndex, setActiveIndex] = useState(null);
+    const [visible, setVisible] = useState(false);
+    
 
-    const { Title, Paragraph } = Typography;
+    useEffect(() => {
+        if (loginSuccess || registerationSuccess) {
+            setVisible(true);
+            const timer = setTimeout(() => {
+                setVisible(false);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [loginSuccess, registerationSuccess]);
+
     // slideshow img
     const slideshowPhotoList = [
         "/storage/cover_photos/10.jpg",
         "/storage/cover_photos/14.jpg",
-        // "/storage/cover_photos/13.jpg",
         "/storage/cover_photos/18.jpg",
     ];
     const blogs = [
@@ -91,6 +104,17 @@ export default function ContentSection() {
     return (
         <>
             <section>
+                {loginSuccess && visible && (
+                    <div className="fixed top-24 left-1/3 z-50 bg-green-200 p-3 px-40 rounded shadow-md transition-opacity duration-1000 ease-out">
+                        {loginSuccess}
+                    </div>
+                )}
+                {registerationSuccess && visible && (
+                    <div className="fixed top-24 left-1/3 z-50 bg-green-200 p-3 px-40 rounded shadow-md transition-opacity duration-1000 ease-out ">
+                        {registerationSuccess}
+                    </div>
+                )}
+
                 {/* img section  */}
                 <div className="mt-10">
                     <Carousel autoplay>

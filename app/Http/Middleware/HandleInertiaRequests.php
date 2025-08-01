@@ -49,9 +49,13 @@ class HandleInertiaRequests extends Middleware
              */
             'status' => session('status'),
 
-            'registerationSuccess' => $request->session()->get("registerationSuccess"),
-            
+            'registerationError' => $request->session()->get("registerationError"),
+
             'loginSuccess' => $request->session()->get("loginSuccess"),
+            'loginError' => $request->session()->get("loginError"),
+
+            'updateProfileSuccess' => $request->session()->get("updateProfileSuccess"),
+            'updateProfileError' => $request->session()->get("updateProfileError"),
 
             /**
              * Here's an example for sharing custom prop.
