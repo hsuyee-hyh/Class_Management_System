@@ -21,10 +21,6 @@ Route::get('/', function () {
     return Inertia::render('Home/Home');
 })->middleware(['auth', 'verified'])->name('home');
 
-Route::get('/course', function () {
-    return Inertia::render('Course');
-})->middleware(['auth', 'verified'])->name('course');
-
 // reset password
 Route::get('/forgot-password', function () {
     return Inertia::render('Auth/ForgotPassword');
@@ -48,6 +44,7 @@ Route::get('/reset-password/{token}', function (string $token) {
 })->middleware('guest')->name('password.reset');
 
 
+// profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile/edit-password', [PasswordController::class, 'edit'])->name('profile.editPassword');
     Route::patch('/profile/edit-password', [PasswordController::class, 'update'])->name('profile.updatePassword');
@@ -57,5 +54,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
 });
+
+// course
+Route::get('/class', function () {
+    return Inertia::render('Classes/Class');
+})->middleware(['auth', 'verified'])->name('class');
 
 require __DIR__ . '/auth.php';

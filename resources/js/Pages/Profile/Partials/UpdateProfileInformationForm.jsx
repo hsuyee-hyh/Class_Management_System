@@ -88,7 +88,7 @@ export default function UpdateProfileInformation({
             route("profile.update"),
             {
                 ...data,
-                // _method: "patch", // override method to PATCH
+                _method: "patch", // override method to PATCH
             },
             {
                 forceFormData: true,

@@ -25,7 +25,7 @@ export default function Register() {
 
     console.log("registerationError is " + errors.registerationError);
     useEffect(() => {
-        if ( errors.registerationError) {
+        if (errors.registerationError) {
             setVisible(true);
             const timer = setTimeout(() => {
                 setVisible(false);
@@ -71,12 +71,12 @@ export default function Register() {
     return (
         <>
             {/* {errors.registerationError && ( */}
-                {/* // <Alert */}
-                    {/* // message="Error" */}
-                    {/* // description={errors.registerationError} */}
-                    {/* // type="error" */}
-                    {/* // showIcon */}
-                {/* // /> */}
+            {/* // <Alert */}
+            {/* // message="Error" */}
+            {/* // description={errors.registerationError} */}
+            {/* // type="error" */}
+            {/* // showIcon */}
+            {/* // /> */}
             {/* // )} */}
             <AccountLayout className="relative">
                 {visible && errors.registerationError && (
@@ -84,7 +84,7 @@ export default function Register() {
                         className="absolute top-2 left-1/3 z-10 py-4 px-10 bg-red-200  py-2 rounded-lg
                         transition-opacity ease-out duration-100"
                     >
-                        { errors.registerationError}
+                        {errors.registerationError}
                     </div>
                 )}
 

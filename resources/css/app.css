@@ -26,9 +26,28 @@ body {
 }
 
 /* profile menu  */
-.custom-profile-menu-item:hover{
-  @apply text-yellow-500
+.custom-profile-menu-item:hover {
+    @apply text-yellow-500;
 }
 .custom-profile-menu-item.ant-menu-item-selected {
     @apply bg-yellow-200 text-yellow-700 font-semibold;
+}
+
+/* class select box */
+
+
+/* radio menu */
+/* Unselected state */
+.ant-radio-button-wrapper {
+    color: #000 !important;
+}
+
+/* Selected state */
+.ant-radio-button-wrapper-checked {
+    color: #000 !important;
+}
+
+/* Hover state */
+.ant-radio-button-wrapper:hover {
+    color: #000 !important;
 }
