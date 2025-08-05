@@ -123,4 +123,13 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+    /* auth */
+    'aliases' => [
+        // ...
+        'Auth' => Illuminate\Support\Facades\Auth::class,
+        // ...
+    ],
+
+
 ];

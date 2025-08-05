@@ -1,3 +1,4 @@
+import "../../../css/app.css";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageContainer, ProCard, ProLayout } from "@ant-design/pro-components";
 import {
@@ -6,84 +7,116 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    ConfigProvider,
-    Drawer,
+import { Button, ConfigProvider, Drawer, Popconfirm, Space, Table } from "antd";
+import { useEffect, useState } from "react";
+import { useForm, usePage, useRemember } from "@inertiajs/react";
 
-} from "antd";
-import { useState } from "react";
-import "../../../css/app.css";
-import TextInput from "@/Components/Form/TextInput";
-import Selection from "@/Components/Form/Selection";
-import { useForm } from "@inertiajs/react";
-import FormButton from "@/Components/Form/FormButton";
-import SearchInputWidget from "./ClassWidgets/SearchInputWidget";
-import RadioButtonGroupWidget from "./ClassWidgets/RadioButtonGroupWidget";
-import SelectWidget from "./ClassWidgets/SelectWidget";
+import CourseSearchForm from "./Partials/CourseSearchForm";
+import CourseCreationForm from "./Partials/CourseCreationForm";
+import ResultTable from "./Partials/ResultTable";
+import { Result } from "postcss";
 
 export default function Course() {
-    const [searchClassTerm, setSearchClassTerm] = useState("");
-    const [openDrawer, setOpenDrawer] = useState(false);
-    const [searchValue, setSearchValue] = useState("");
+    const {
+        courses = {},
+        searchedCourses = {},
+        requestOldData = {},
+        courseNotFoundError,
+        isSearching,
+    } = usePage().props;
 
-    const { data, setData, post, processing, errors, reset } = useForm({
-        classname: "",
+    const coursesAllList = courses?.data ?? [];
+    const searchList = searchedCourses?.data ?? [];
+    const [openDrawer, setOpenDrawer] = useState(false);
+    const [startYear, setStartYear] = useState(null);
+    const [endYear, setEndYear] = useState(null);
+    const [search, setSearch] = useState(false);
+
+    // create: data
+    const { data, setData, get, post, processing, errors, reset } = useForm({
+        coursename: "",
         description: "",
         academicyear: "",
-        semester: "",
-    });
-    const dataList = [
-        "Apple",
-        "Banana",
-        "Orange",
-        "Mango",
-        "Pineapple",
-        "Blueberry",
-        "Strawberry",
-        "Watermelon",
-        "Grape",
-    ];
-
-    const filteredList = dataList.filter((item) => {
-        const searchWords = searchValue
-            .toLowerCase()
-            .split(" ")
-            .filter(Boolean);
-        const itemText = item.toLowerCase();
-
-        return searchWords.some((word) => itemText.includes(searchWords));
+        startdate: "",
+        enddate: "",
+        semester: "1st Semester",
     });
 
-    const semesterItems = [
-        {
-            value: "1",
-            label: "1st Semester",
-        },
-        {
-            value: "2",
-            label: "2nd Semester",
-        },
+    // search: data
+    const {
+        data: searchData,
+        setData: setSearchData,
+        get: searchGet,
+        reset: resetSearch,
+    } = useForm({
+        coursename: requestOldData?.coursename || "",
+        academicyear: requestOldData?.academicyear || "",
+        semester: requestOldData?.semester || "",
+    });
+
+    useEffect(() => {
+        if (startYear && endYear) {
+            setData("academicyear", `${startYear}-${endYear + 1}`);
+        }
+    }, [startYear, endYear]);
+
+    /* search form things */
+    // search: academic year select option
+    const uniqueYears = Array.from(
+        new Set(coursesAllList.map((course) => course.academic_year))
+    );
+
+    const academicYearOptions = uniqueYears.map((year) => ({
+        label: year,
+        value: year,
+    }));
+    console.log("acd options: " + academicYearOptions);
+
+    // search: semester select options
+    const semesterOptions = [
+        { label: "1st Semester", value: "1st Semester" },
+        { label: "2nd Semester", value: "2nd Semester" },
     ];
+    // search: handle data change
+    const handleSearchDataChange = (e) => {
+        setSearchData(e.target.name, e.target.value);
+        setSearch(true); // show table list
+    };
 
-    const academicYearItems = [
-        {
-            value: "1",
-            label: "2019-2020",
-        },
-        {
-            value: "2",
-            label: "2020-2021",
-        },
-    ];
+    // search: form submit
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        searchGet(
+            route("course.search"),
+            {
+                search: searchData,
+            },
+            {
+                preserveState: true,
+                replace: false,
+                onSuccess: () => {
+                    console.log("after search submit button: " + searchData);
+                },
+            }
+        );
+    };
+    // search : reset
+    const handleReset = () => {
+        setSearch(false);
+        resetSearch();
 
-    const handleInputChange = (e) => {
-        setSearchValue(e.target.value);
-    }
-    const handleItemSelect = (value) => {
-        setSearchValue(value);
-    }
-    
+        searchGet(
+            route("course"),
+            {},
+            {
+                preserveState: false,
+                replace: true,
+                only: [],
+            }
+        );
+    };
 
+    // drawer
     const showDrawer = () => {
         setOpenDrawer(true);
     };
@@ -91,12 +124,32 @@ export default function Course() {
         setOpenDrawer(false);
     };
 
+    // create: form data change
+    const handleDataChange = (e) => {
+        setData(e.target.name, e.target.value);
+    };
+    // create: form data change
+    const handleDateChange = (name, date) => {
+        // start date define
+        setData(name, date);
+        const year = date.getFullYear();
+        if (name == "startdate") {
+            setStartYear(year);
+        } else {
+            setEndYear(year);
+        }
+    };
+
+    // create: form submit
     const handleSubmit = (event) => {
         event.preventDefault();
-        post(route(), {
-            classname: data.classname,
+
+        post(route("course.store"), {
+            coursename: data.coursename,
             description: data.description,
             academicyear: data.academicyear,
+            startdate: data.startdate,
+            enddate: data.enddate,
             semester: data.semester,
 
             forceFormData: true,
@@ -104,8 +157,71 @@ export default function Course() {
         });
     };
 
+    // table: table list
+    const columns = [
+        {
+            title: "Course Name",
+            dataIndex: "course_name",
+            key: "coursename",
+        },
+        {
+            title: "Description",
+            dataIndex: "description",
+            key: "description",
+        },
+        {
+            title: "Academic Year",
+            dataIndex: "academic_year",
+            key: "academicyear",
+        },
+        {
+            title: "Semester",
+            dataIndex: "semester",
+            key: "semester",
+        },
+        {
+            title: "Start Date",
+            dataIndex: "start_date",
+            key: "startdate",
+        },
+        {
+            title: "End Date",
+            dataIndex: "end_date",
+            key: "enddate",
+        },
+        {
+            title: "Actions",
+            key: "actions",
+            render: (text, record) => (
+                <Space>
+                    <Button
+                        type="link"
+                        onClick={() => console.log("Edit button clicked")}
+                    >
+                        Edit
+                    </Button>
+                    <Popconfirm
+                        title="Are you sure to delete?"
+                        onConfirm={() => console.log("delete clicked")}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button type="link" danger>
+                            Delete
+                        </Button>
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
+
+    // table: pagination page
+    const handlePageChange = (page, pageSize) => {
+        Inertia.get(route("course.select"), { page }, { preserveState: true });
+    };
     return (
         <>
+          
             <AuthenticatedLayout>
                 <ConfigProvider
                     theme={{
@@ -123,7 +239,7 @@ export default function Course() {
                                 boxShadow: "none",
                                 colorBorder: "#DDDAD0",
                                 colorTextPlaceholder: "#7A7A73",
-                                fontSize:"16px"
+                                fontSize: "16px",
                             },
                         },
                         token: {
@@ -132,7 +248,7 @@ export default function Course() {
                         },
                     }}
                 >
-                    {/* create button && search boxes  */}
+                    {/* create course form  */}
                     <div>
                         <PageContainer
                             header={{
@@ -162,73 +278,17 @@ export default function Course() {
                                     onClose={closeDrawer}
                                     open={openDrawer}
                                 >
-                                    <form
+                                    {/* form  */}
+                                    <CourseCreationForm
                                         onSubmit={handleSubmit}
-                                        encType="multipart/form-data"
-                                        className="space-y-4"
-                                    >
-                                        <TextInput
-                                            label="Class Name"
-                                            name="classname"
-                                            value={data.classname}
-                                            onChange={(e) => e.target.value}
-                                            error={errors.classname}
-                                            required
-                                        />
-                                        <TextInput
-                                            label="Description"
-                                            name="description"
-                                            value={data.description}
-                                            onChange={(e) => e.target.value}
-                                            error={errors.description}
-                                            required
-                                        />
-
-                                        {/* <input type="date" value={data.academicyear} onChange={handleDateChange}/> */}
-                                        <Selection
-                                            label="Academic Year"
-                                            name="academicyear"
-                                            value={data.academicyear}
-                                            options={[
-                                                {
-                                                    value: "2019-2020",
-                                                    label: "2029-2020",
-                                                },
-                                                {
-                                                    value: "2020-2021",
-                                                    label: "2020-2021",
-                                                },
-                                            ]}
-                                            onChange={(e) => e.target.value}
-                                            error={errors.academicyear}
-                                            required
-                                        />
-
-                                        <Selection
-                                            label="Semester"
-                                            name="semester"
-                                            value={data.semester}
-                                            options={[
-                                                {
-                                                    value: "1st semester",
-                                                    label: "1st Semester",
-                                                },
-                                                {
-                                                    value: "2nd semester",
-                                                    label: "2nd Semester",
-                                                },
-                                            ]}
-                                            onChange={(e) => e.target.value}
-                                            error={errors.academicyear}
-                                            required
-                                        />
-                                        <FormButton
-                                            Label="Submit"
-                                            type="submit"
-                                            className="bg-yellow-200 text-white rounded-md p-2"
-                                            disabled={processing}
-                                        ></FormButton>
-                                    </form>
+                                        onDataChange={handleDataChange}
+                                        onDateChange={handleDateChange}
+                                        data={data}
+                                        startYear={startYear}
+                                        endYear={endYear}
+                                        errors={errors}
+                                        processing={processing}
+                                    ></CourseCreationForm>
                                 </Drawer>
                             </div>
                             {/*  Search by className, teachername, academic year/semester */}
@@ -242,37 +302,18 @@ export default function Course() {
                                         xl: "80%",
                                     }}
                                 >
-                                    <div className="flex flex-col md:flex-row flex-wrap justify-start items-center gap-2 md:gap-4 w-full">
-                                        {/* search by class name  */}
-                                        <SearchInputWidget
-                                            placeholder="Search Class Name"
-                                            value={searchClassTerm}
-                                            onInputChange = {handleInputChange}
-                                            onItemSelect = {handleItemSelect}
-                                            filteredList={filteredList}
-                                        />
-                                        {/* search by teacher name  */}
-                                        <SearchInputWidget
-                                            placeholder="Search Teacher Name"
-                                            // value={searchTeacherTerm}
-                                            // onChange={(e) => setTeacherTerm(e.target.value)}
-                                        />
-
-                                        {/* Academic Year select box  */}
-                                        <SelectWidget
-                                            placeholder="Select Academic Year"
-                                            options = {academicYearItems}
-                                        />
-
-                                        {/* Semester select box */}
-                                        <SelectWidget
-                                            placeholder="Select Semester"
-                                            options={semesterItems}
-                                        />
-                                    </div>
+                                    <CourseSearchForm
+                                        onSubmit={handleSearchSubmit}
+                                        onChange={handleSearchDataChange}
+                                        searchData={searchData}
+                                        academicYearOptions={
+                                            academicYearOptions
+                                        }
+                                        semesterOptions={semesterOptions}
+                                    ></CourseSearchForm>
                                 </ProCard>
 
-                                    {/* search/ reset radio group  */}
+                                {/* search/ reset radio group  */}
                                 <ProCard
                                     colSpan={{
                                         xs: "100%",
@@ -282,13 +323,47 @@ export default function Course() {
                                         xl: "20%",
                                     }}
                                 >
-                                    <RadioButtonGroupWidget
-                                    options={['Search', 'Reset']}
-                                    defaultValue="Search"
-                                    />
+                                    <div className="flex flex-row space-x-2">
+                                        <button
+                                            className="w-20 bg-yellow-200 px-4 py-2 border-2 rounded-md
+                                                 focus:bg-yellow-200 active:bg-yellow-200 "
+                                            onClick={handleSearchSubmit}
+                                        >
+                                            Search
+                                        </button>
+                                        <button
+                                            className="w-20 bg-yellow-200 px-4 py-2 border-2 rounded-md
+                                                focus:bg-yellow-200 active:bg-yellow-200"
+                                            onClick={handleReset}
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
                                 </ProCard>
                             </ProCard>
                             {/* class list table 2 */}
+                            {isSearching && searchList.length > 0 && (
+                                <ResultTable
+                                    list={searchList}
+                                    columns={columns}
+                                    data={searchedCourses}
+                                    onPageChange={handlePageChange}
+                                ></ResultTable>
+                            )}
+
+                            {isSearching && searchList.length == 0 && (
+                                <div className="text-gray-600 text-center bg-gray-300 py-5 px-2">
+                                    Course Not Found
+                                </div>
+                            )}
+
+                            {!isSearching && coursesAllList.length > 0 && (
+                                <ResultTable
+                                    list={coursesAllList}
+                                    columns={columns}
+                                    data={courses}
+                                ></ResultTable>
+                            )}
                         </PageContainer>
                     </div>
                 </ConfigProvider>

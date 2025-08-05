@@ -1,7 +1,7 @@
 import { Field, Input, Label } from "@headlessui/react";
 import clsx from "clsx";
 
-export default function TextInput({ label, type, name, value, onChange, required, error })
+export default function TextInput({ label, type, name, value, onChange, required, error, readOnly})
 {
     return (
         <div>
@@ -20,6 +20,7 @@ export default function TextInput({ label, type, name, value, onChange, required
                         "mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm",
                         error && "border-red-500"
                     )}
+                    readOnly={readOnly}
                 />
                 {error && (
                     <div className="mt-2 text-sm text-red-600">{error}</div>

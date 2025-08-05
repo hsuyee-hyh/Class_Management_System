@@ -4,6 +4,7 @@ export default function RadioButtonGroupWidget({
     options,
     defaultValue,
     buttonStyle = "solid",
+    onChange
 }) {
     return (
         <>
@@ -15,6 +16,7 @@ export default function RadioButtonGroupWidget({
                     optionType="button"
                     buttonStyle={buttonStyle}
                     buttonBg
+                    onChange={onChange}
                 />
             </div>
         </>

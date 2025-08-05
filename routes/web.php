@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -52,12 +53,18 @@ Route::middleware('auth')->group(function () {
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
 });
 
 // course
-Route::get('/class', function () {
-    return Inertia::render('Classes/Class');
-})->middleware(['auth', 'verified'])->name('class');
+Route::get('/course', [CourseController::class, 'select'])
+    ->middleware(['auth', 'verified'])
+    ->name('course');
+
+Route::get('/course/search', [CourseController::class, 'search'])
+    ->middleware(['auth', 'verified'])
+    ->name('course.search');
+
+Route::post('/class', [CourseController::class, 'store'])->name('course.store');
+
 
 require __DIR__ . '/auth.php';

@@ -33,7 +33,10 @@
         "@inertiajs/react": "^2.0.15",
         "@material-tailwind/react": "^2.1.10",
         "antd": "^5.26.7",
+        "date-fns": "^4.1.0",
+        "lodash": "^4.17.21",
         "react": "^19.1.0",
+        "react-datepicker": "^8.4.0",
         "react-dom": "^19.1.0",
         "ziggy": "^2.4.0",
         "ziggy-js": "^2.5.3"

@@ -55,12 +55,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Home
                                 </NavLink>
                                 <NavLink
-                                    name="class"
-                                    componentName="Class"
+                                    name="course"
+                                    componentName="Course"
                                     activeLink={activeLink}
                                     setActiveLink={setActiveLink}
-                                    href={route("class")}
-                                    active={route().current("class")}
+                                    href={route("course")}
+                                    active={route().current("course")}
                                 >
                                     Course
                                 </NavLink>
@@ -195,11 +195,11 @@ export default function AuthenticatedLayout({ header, children }) {
                             Home
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            componentName="Class"
+                            componentName="Course"
                             activeLink={activeLink}
                             setActiveLink={setActiveLink}
-                            href={route("class")}
-                            active={route().current("class")}
+                            href={route("course")}
+                            active={route().current("course")}
                         >
                             Course
                         </ResponsiveNavLink>
