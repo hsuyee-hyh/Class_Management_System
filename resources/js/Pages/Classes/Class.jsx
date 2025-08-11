@@ -7,40 +7,40 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, ConfigProvider, Drawer, Popconfirm, Space, Table } from "antd";
+import {
+    Alert,
+    Button,
+    ConfigProvider,
+    Drawer,
+    Popconfirm,
+    Space,
+    Table,
+} from "antd";
 import { useEffect, useState } from "react";
-import { useForm, usePage, useRemember } from "@inertiajs/react";
+import { useForm, usePage, router } from "@inertiajs/react";
 
 import CourseSearchForm from "./Partials/CourseSearchForm";
 import CourseCreationForm from "./Partials/CourseCreationForm";
 import ResultTable from "./Partials/ResultTable";
-import { Result } from "postcss";
 
 export default function Course() {
     const {
         courses = {},
+        createdCourse = {},
         searchedCourses = {},
         requestOldData = {},
         courseNotFoundError,
         isSearching,
+        CourseCreationSuccess,
+        CourseCreationError,
     } = usePage().props;
 
     const coursesAllList = courses?.data ?? [];
     const searchList = searchedCourses?.data ?? [];
     const [openDrawer, setOpenDrawer] = useState(false);
-    const [startYear, setStartYear] = useState(null);
-    const [endYear, setEndYear] = useState(null);
     const [search, setSearch] = useState(false);
 
-    // create: data
-    const { data, setData, get, post, processing, errors, reset } = useForm({
-        coursename: "",
-        description: "",
-        academicyear: "",
-        startdate: "",
-        enddate: "",
-        semester: "1st Semester",
-    });
+    console.log("Created Course from Class: ", createdCourse);
 
     // search: data
     const {
@@ -54,12 +54,6 @@ export default function Course() {
         semester: requestOldData?.semester || "",
     });
 
-    useEffect(() => {
-        if (startYear && endYear) {
-            setData("academicyear", `${startYear}-${endYear + 1}`);
-        }
-    }, [startYear, endYear]);
-
     /* search form things */
     // search: academic year select option
     const uniqueYears = Array.from(
@@ -70,7 +64,6 @@ export default function Course() {
         label: year,
         value: year,
     }));
-    console.log("acd options: " + academicYearOptions);
 
     // search: semester select options
     const semesterOptions = [
@@ -119,42 +112,26 @@ export default function Course() {
     // drawer
     const showDrawer = () => {
         setOpenDrawer(true);
+        router.get(route("course.create"), {}, { preserveState: true });
     };
     const closeDrawer = () => {
         setOpenDrawer(false);
+        router.get(
+            route("course"),
+            {},
+            { preserveState: false, replace: true }
+        );
     };
 
-    // create: form data change
-    const handleDataChange = (e) => {
-        setData(e.target.name, e.target.value);
-    };
-    // create: form data change
-    const handleDateChange = (name, date) => {
-        // start date define
-        setData(name, date);
-        const year = date.getFullYear();
-        if (name == "startdate") {
-            setStartYear(year);
-        } else {
-            setEndYear(year);
-        }
-    };
-
-    // create: form submit
-    const handleSubmit = (event) => {
-        event.preventDefault();
-
-        post(route("course.store"), {
-            coursename: data.coursename,
-            description: data.description,
-            academicyear: data.academicyear,
-            startdate: data.startdate,
-            enddate: data.enddate,
-            semester: data.semester,
-
-            forceFormData: true,
-            onSuccess: () => reset(),
-        });
+    const handleShowButton = (course) => {
+       
+        router.get(
+            route("course.show", course.id),
+            {},
+            {
+                preserveState: true,
+            }
+        );
     };
 
     // table: table list
@@ -195,6 +172,13 @@ export default function Course() {
             render: (text, record) => (
                 <Space>
                     <Button
+                        type="button"
+                        onClick={() => handleShowButton(record)}
+                        className="text-yellow-600"
+                    >
+                        Show
+                    </Button>
+                    <Button
                         type="link"
                         onClick={() => console.log("Edit button clicked")}
                     >
@@ -219,9 +203,9 @@ export default function Course() {
     const handlePageChange = (page, pageSize) => {
         Inertia.get(route("course.select"), { page }, { preserveState: true });
     };
+
     return (
         <>
-          
             <AuthenticatedLayout>
                 <ConfigProvider
                     theme={{
@@ -255,6 +239,31 @@ export default function Course() {
                                 title: "Class List",
                             }}
                         >
+                            {CourseCreationSuccess && (
+                                <>
+                                    <div className="mx-auto mt-10">
+                                        <Alert
+                                            message={CourseCreationSuccess}
+                                            type="success"
+                                            showIcon
+                                            className="mb-4"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {CourseCreationError && (
+                                <>
+                                    <div className="mx-auto mt-10">
+                                        <Alert
+                                            message={CourseCreationError}
+                                            type="error"
+                                            showIcon
+                                            className="mb-4"
+                                        />
+                                    </div>
+                                </>
+                            )}
                             {/* create button  */}
                             <div className="flex justify-end">
                                 <button
@@ -262,7 +271,8 @@ export default function Course() {
                                 rounded-lg px-4 py-2 mb-3 mt-10                               
                                 w-full sm:w-auto
                                 "
-                                    onClick={showDrawer}
+                                    onClick={() => showDrawer()}
+                                    aria-label="Create Class Button"
                                 >
                                     <FontAwesomeIcon
                                         icon={faPlus}
@@ -273,21 +283,15 @@ export default function Course() {
 
                                 <Drawer
                                     title="Create Class"
-                                    width={700}
+                                    width={600}
                                     closable={{ "aria-label": "Close Button" }}
-                                    onClose={closeDrawer}
                                     open={openDrawer}
+                                    onClose={closeDrawer}
                                 >
                                     {/* form  */}
                                     <CourseCreationForm
-                                        onSubmit={handleSubmit}
-                                        onDataChange={handleDataChange}
-                                        onDateChange={handleDateChange}
-                                        data={data}
-                                        startYear={startYear}
-                                        endYear={endYear}
-                                        errors={errors}
-                                        processing={processing}
+                                        createdCourse={createdCourse}
+                                        onCloseDrawer={closeDrawer}
                                     ></CourseCreationForm>
                                 </Drawer>
                             </div>

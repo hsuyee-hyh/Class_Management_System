@@ -1,7 +1,10 @@
+
 <?php
+require __DIR__ . '/auth.php';
 
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -50,21 +53,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit-password', [PasswordController::class, 'edit'])->name('profile.editPassword');
     Route::patch('/profile/edit-password', [PasswordController::class, 'update'])->name('profile.updatePassword');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // course
-Route::get('/course', [CourseController::class, 'select'])
-    ->middleware(['auth', 'verified'])
-    ->name('course');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/course', [CourseController::class, 'select'])->name('course');
+    Route::get('/course/create', [CourseController::class, 'create'])->name('course.create');
+    Route::post('/course/create', [CourseController::class, 'store'])->name('course.store');
+    Route::get('/course/search', [CourseController::class, 'search'])->name('course.search');
+    Route::get('course/show/{id}', [CourseController::class, 'show'])->name('course.show');
+    Route::post('course/show/{id}', [ModuleController::class, 'store'])->name('course.module.store');
 
-Route::get('/course/search', [CourseController::class, 'search'])
-    ->middleware(['auth', 'verified'])
-    ->name('course.search');
+    Route::get('/course/module/create', [ModuleController::class, 'create'])->name('course.module.create');
+    Route::post('/course/module/upload-video', [ModuleController::class, 'uploadVideo'])
+        ->name('course.module.uploadVideo');
+    Route::post('/course/module/upload-presentation', [ModuleController::class, 'uploadPresentation'])
+        ->name('course.module.uploadPresentation');
 
-Route::post('/class', [CourseController::class, 'store'])->name('course.store');
+});
+// Route::post('/course', [ModuleController::class, 'store'])
+// ->middleware(['auth', 'verified'])
+// ->name('course.module.store');
+
+    
 
 
-require __DIR__ . '/auth.php';
+
+
+

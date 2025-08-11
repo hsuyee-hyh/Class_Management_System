@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('course_name');
             $table->string("description");
+            $table->string("photo")->nullable();
             $table->date('start_date');
             $table->date('end_date');
             $table->string('academic_year', 9);
@@ -23,6 +24,9 @@ return new class extends Migration
                 Semester::FIRST_SEMESTER->value,
                 Semester::SECOND_SEMESTER->value,
             ])->default(Semester::FIRST_SEMESTER->value);
+            
+            // $table->string('video');
+            // $table->string('presentation');
             $table->timestamps();
         });
     }

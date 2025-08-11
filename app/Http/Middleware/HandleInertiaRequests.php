@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -57,6 +58,14 @@ class HandleInertiaRequests extends Middleware
             'updateProfileSuccess' => $request->session()->get("updateProfileSuccess"),
             'updateProfileError' => $request->session()->get("updateProfileError"),
 
+            
+            'CourseCreationSuccess' => $request->session()->get("CourseCreationSuccess"),
+            'CourseCreationError' => $request->session()->get("CourseCreationError"),
+
+            'createdCourse' => $request->session()->get("createdCourse"),
+
+            'ModuleCreationSuccess' => $request->session()->get("ModuleCreationSuccess"),
+            'ModuleCreationError' => $request->session()->get("ModuleCreationError"),
             /**
              * Here's an example for sharing custom prop.
              */

@@ -27,23 +27,24 @@ class CourseController extends Controller
         ]);
     }
 
-    public function store(CourseRequest $request): RedirectResponse
+    public function create()
     {
-
+        return Inertia::render('Classes/Class');
+    }
+    public function store(CourseRequest $request)
+    {
         try {
-            // user is admin or authenticated and verify
-            if (Auth::check() && Auth::user()->role === 'admin') {
-                $course = $this->courseService->createCourse($request);
-            }
-            return redirect(route('course', absolute: false))->with([
-                'courseCreationSuccess' => "Course created successfully."
+            $course = $this->courseService->createCourse($request);
+            return Inertia::render('Classes/Class', [
+                'createdCourse' => $course,
+                'CourseCreationSuccess' => "Course created successfully."
             ]);
         } catch (Exception $e) {
             Log::error("Course Creation Error @CourseController.store", [
-                "courseCreationError" => $e->getMessage()
+                "CourseCreationError" => $e->getMessage()
             ]);
-            return redirect()->back()->withErrors([
-                "courseCreationError" => "Course Creation Failes. Please Try Again."
+            return Inertia::render('Classes/Class', [
+                'CourseCreationError' => "Course Creation Failed. Please Try Again."
             ]);
         }
     }
@@ -66,6 +67,16 @@ class CourseController extends Controller
             'searchedCourses' => $filterCourses,
             'courses' => $courses,
             'isSearching' => true,
+        ]);
+    }
+
+    public function show($id)
+    {
+        $data = $this->courseService->showCourse($id);
+        
+        return Inertia::render('Classes/ShowClass', [
+            'foundCourse' => $data['course'],
+            'groupModules' => $data['groupModule'],
         ]);
     }
 }

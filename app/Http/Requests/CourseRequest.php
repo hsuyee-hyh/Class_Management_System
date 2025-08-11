@@ -27,6 +27,7 @@ class CourseRequest extends FormRequest
         return [
             'coursename' => 'required|string|max:255',
             'description' => 'required|string|max:255',
+            'coursephoto' => 'nullable',
             'startdate' => 'required|date', 
             'enddate' => 'required|date|after_or_equal:startdate',
             'academicyear' => 'required',

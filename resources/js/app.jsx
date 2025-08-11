@@ -6,6 +6,9 @@ import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { createRoot } from "react-dom/client";
 import { route } from "ziggy-js";
 import "../css/app.css";
+import React from "react";
+import { ConfigProvider } from "antd";
+import enUS from 'antd/es/locale/en_US';
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
@@ -24,7 +27,13 @@ createInertiaApp({
         // route.setZiggy(window.ziggy)
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <React.StrictMode>
+                <ConfigProvider locale={enUS}>
+                    <App {...props} />
+                </ConfigProvider>
+            </React.StrictMode>
+        );
     },
     progress: {
         color: "#4B5563",

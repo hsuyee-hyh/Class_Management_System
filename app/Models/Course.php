@@ -13,9 +13,15 @@ class Course extends Model
     protected $fillable=[
         'course_name',
         'description',
+        'photo',
         'start_date',
         'end_date',
         'academic_year',
-        'semester'
+        'semester',
+        
     ];
+
+    public function modules(){
+        return $this->hasMany(Module::class);
+    }
 }
