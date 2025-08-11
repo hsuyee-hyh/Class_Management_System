@@ -17,19 +17,24 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import CourseModuleCreationForm from "./Partials/CourseModuleCreationForm";
+import { set } from "lodash";
 
-export default function ShowClass({ foundCourse, groupModules }) {
+export default function ShowClass({
+    foundCourse,
+    groupModules,
+    ModuleCreationSuccess,
+    ModuleCreationError,
+    
+}) {
     console.log("foundCourse is ", foundCourse);
     console.log("groupModules from ShowClass.jsx: ", groupModules);
-    console.log(
-        "groupModules[1][0] from ShowClass.jsx: "
-        // groupModules[1][0].course.course_name
-    );
+    
+    
+    // const { ModuleCreationSuccess, ModuleCreationError } = usePage().props;
+     console.log("ModuleCreationSuccess", ModuleCreationSuccess);
+    const [successMessage, setSuccessMessage] = useState(ModuleCreationSuccess);
+    const [errorMessage, setErrorMessage] = useState(ModuleCreationError);
 
-    const { ModuleCreationSuccess, ModuleCreationError } = usePage().props;
-    const [flashMessage, setFlashMessage] = useState(null);
-
-    const [isModuleList, setIsModuleList] = useState(false);
     const [openDrawer, setOpenDrawer] = useState(false);
 
     const [visible, setVisible] = useState(false);
@@ -48,6 +53,23 @@ export default function ShowClass({ foundCourse, groupModules }) {
         }
     }, [groupModules]);
 
+
+    useEffect(() => {
+        if(ModuleCreationSuccess ){
+            const timer = setTimeout(() => {
+                setSuccessMessage(null);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+
+        if(ModuleCreationError){
+            const timer1= setTimeout(()=>{
+                setErrorMessage(null);
+            }, 3000);
+            return () => clearTimeout(timer1);
+        }
+    },[ModuleCreationSuccess, ModuleCreationError])
+
     // initial for img
 
     const showDrawer = () => {
@@ -57,7 +79,7 @@ export default function ShowClass({ foundCourse, groupModules }) {
     const closeDrawer = () => {
         setOpenDrawer(false);
         resetForm();
-        get(
+        router.get(
             route("course.show", { id: foundCourse.id }),
             {},
             { preserveState: false, replace: true }
@@ -68,15 +90,20 @@ export default function ShowClass({ foundCourse, groupModules }) {
         <>
             <AuthenticatedLayout>
                 <div className="mt-24 ">
-                    {console.log(ModuleCreationSuccess)}
-                    {/* {flashMessage && ( */}
-                    {/* // <Alert message={flashMessage} type='warning'/>
-                    // )} */}
+                    
 
-                    {ModuleCreationSuccess && (
-                        <Alert message={ModuleCreationSuccess} type="success" />
+                    {successMessage && (
+                        <div className="w-1/3 mx-auto mt-10 transition-opacity duration-500 ease-in-out">
+                        <Alert message={successMessage} type="success" showIcon/>
+                        </div>
                     )}
 
+                    {ModuleCreationError && (
+
+                        <div className="w-1/3 mx-auto mt-10">
+                            <Alert message={ModuleCreationError} type="error" showIcon/>
+                        </div>
+                    )}
                     <div className="flex flex-col">
                         <Card className=" py-5 px-40">
                             <div className="flex flex-col md:flex-row items-center gap-8 justify-center">

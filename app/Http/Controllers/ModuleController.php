@@ -39,32 +39,15 @@ class ModuleController extends Controller
     {
         try {
             $module = $this->moduleService->createModule($request, $id);
-            return redirect()->route('course.show',$id, 303)->with([
-                'ModuleCreationSuccess' => 'Module created successfully!',
-                'module' => $module,
-            ]);
-            // return Inertia::render('Classes/ShowClass', [
-                // 'module' => $module,
-                // 'ModuleCreationSuccess' => 'Module created successfully!'
-            // ]);
-        //    
-           
-           
-           
+            return redirect()
+                ->route('course.show', $id)
+                ->with('ModuleCreationSuccess', 'Module created successfully!');
         } catch (Exception $e) {
             Log::error("@ModuleController.create", [
                 "ModuleCreationError" => $e->getMessage()
             ]);
-            return redirect()->route('course.show',$id)->with([
-                'ModuleCreationError' => 'Module creation failed.'
-            ]);
-            //  return Inertia::render('Classes/ShowClass', [
-            //      'ModuleCreationError' => 'Module creation failed.'
-            //  ]);
-
-          
-          
-          
+            return redirect()->route('course.show',$id)
+                ->with('ModuleCreationError', 'Module creation failed.');
         }
     }
 

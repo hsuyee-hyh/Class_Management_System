@@ -4,10 +4,14 @@ import { Alert, Button, message, Modal, Progress, Upload } from "antd";
 import axios from "axios";
 import { useState } from "react";
 import { Inertia } from "@inertiajs/inertia";
-import { usePage, useForm } from "@inertiajs/react";
+import { usePage, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 
-export default function CourseModuleCreationForm({ foundCourse, groupModules, onCloseDrawer }) {
+export default function CourseModuleCreationForm({
+    foundCourse,
+    groupModules,
+    onCloseDrawer,
+}) {
     const { errors } = useForm();
     const { ModuleCreationSuccess, ModuleCreationError } = usePage().props;
 
@@ -91,7 +95,10 @@ export default function CourseModuleCreationForm({ foundCourse, groupModules, on
             //  update fileList with video path
             // append VideoPaths to send when form submit
             setVideoPaths((prev) => [...prev, response?.data?.videoPath]);
-            setVideoOriginPaths((prev) => [...prev, response?.data?.videoOriginPath]);
+            setVideoOriginPaths((prev) => [
+                ...prev,
+                response?.data?.videoOriginPath,
+            ]);
             // setFileList((prevList) =>
             // prevList.map((f) =>
             // f.uid === file.uid
@@ -227,7 +234,7 @@ export default function CourseModuleCreationForm({ foundCourse, groupModules, on
                 formData.append(`videoFiles[${index}]`, url); //append to db
             });
         }
-        if (videoOriginPaths.length >0 ) {
+        if (videoOriginPaths.length > 0) {
             videoOriginPaths.forEach((url, index) => {
                 formData.append(`videoOriginPaths[${index}]`, url);
             });
@@ -237,29 +244,30 @@ export default function CourseModuleCreationForm({ foundCourse, groupModules, on
             formData.append("presentationFilePath", presentationFilePath);
         }
 
-        if (presentationOriginPath){
-            formData.append("presentationOriginPath", presentationOriginPath)
+        if (presentationOriginPath) {
+            formData.append("presentationOriginPath", presentationOriginPath);
         }
 
         Inertia.post(route("course.module.store", foundCourse.id), formData, {
             forceFormData: true,
-
+            preserveState: false,
             onSuccess: () => {
                 // console.log("onSucess message alert");
-                // message.success("Module created successfully");
+                message.success("Module created successfully");
                 // props.onCloseDrawer();
                 // form.resetFields();
                 // props.onFlashMessageShow("Module created successfully");
                 // window.location.href = route("course.show", foundCourse.id);
             },
-            preserveScroll: true,
-            preserveState: true,
             onError: (errors) => {
-                // message.error("Module creation failed");
+                message.error("Module creation failed");
                 // console.log("Modle Creation Error: ", errors);
                 // props.onFlashMessageShow("Module creation failed");
             },
         });
+        router.get(route("course.show", foundCourse.id));
+        reset();
+        resetForm();
     };
 
     return (
@@ -313,7 +321,9 @@ export default function CourseModuleCreationForm({ foundCourse, groupModules, on
                         <label className="mb-2">
                             Upload video (Max 8 videos can be uploaded.)
                         </label>
-                        <div className="text-yellow-500 font-semibold">( ** mp4 file only ** )</div>
+                        <div className="text-yellow-500 font-semibold">
+                            ( ** mp4 file only ** )
+                        </div>
                         <div className="border border-gray-400 h-70 rounded-lg p-5 mt-2">
                             {errors.videoFiles && (
                                 <div className="text-red-500 text-sm">
@@ -375,7 +385,12 @@ export default function CourseModuleCreationForm({ foundCourse, groupModules, on
                     </div>
 
                     <div className="mt-3 flex flex-col">
-                        <label>Upload Presentation File <div className="text-yellow-500 font-semibold">( ** PDF file only **)</div></label>
+                        <label>
+                            Upload Presentation File{" "}
+                            <div className="text-yellow-500 font-semibold">
+                                ( ** PDF file only **)
+                            </div>
+                        </label>
                         <div
                             className="mt-2 border border-gray-400 rounded-lg
                             py-2 px-5"
