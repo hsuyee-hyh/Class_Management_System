@@ -5,7 +5,6 @@ import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { createRoot } from "react-dom/client";
 import { route } from "ziggy-js";
-import "../css/app.css";
 import React from "react";
 import { ConfigProvider } from "antd";
 import enUS from 'antd/es/locale/en_US';

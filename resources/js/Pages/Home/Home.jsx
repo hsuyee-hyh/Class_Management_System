@@ -3,8 +3,10 @@ import ContentSection from "./Widgets/ContentSection";
 import Footer from "./Widgets/Footer";
 import { Spin } from "antd";
 import { useState, useEffect } from "react";
+import { usePage } from "@inertiajs/react";
 
 export default function Home() {
+    const {courses} = usePage().props;
     const [pageLoaded, setPageLoaded] = useState(false);
     // const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -42,7 +44,7 @@ export default function Home() {
     return (
         <>
             <AuthenticatedLayout>
-                <ContentSection></ContentSection>
+                <ContentSection courses={courses}></ContentSection>
                 <Footer></Footer>
             </AuthenticatedLayout>
         </>

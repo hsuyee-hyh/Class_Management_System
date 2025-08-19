@@ -1,13 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import TextInput from "@/Components/Form/TextInput";
-import axios from "axios";
 import { Alert, Card, Col, Drawer, Row } from "antd";
-import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, message, Modal, Progress, Upload } from "antd";
 import { useEffect, useState } from "react";
-import { Inertia } from "@inertiajs/inertia";
-import { usePage } from "@inertiajs/react";
-import ResultTable from "./Partials/ResultTable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faBoxOpen,
@@ -17,25 +11,24 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import CourseModuleCreationForm from "./Partials/CourseModuleCreationForm";
-import { set } from "lodash";
+import CourseEditForm from "./Partials/CourseEditForm";
 
 export default function ShowClass({
     foundCourse,
     groupModules,
     ModuleCreationSuccess,
     ModuleCreationError,
-    
 }) {
     console.log("foundCourse is ", foundCourse);
     console.log("groupModules from ShowClass.jsx: ", groupModules);
-    
-    
+
     // const { ModuleCreationSuccess, ModuleCreationError } = usePage().props;
-     console.log("ModuleCreationSuccess", ModuleCreationSuccess);
+    console.log("ModuleCreationSuccess", ModuleCreationSuccess);
     const [successMessage, setSuccessMessage] = useState(ModuleCreationSuccess);
     const [errorMessage, setErrorMessage] = useState(ModuleCreationError);
 
     const [openDrawer, setOpenDrawer] = useState(false);
+    const [openEditCourseDrawer, setOpenEditCourseDrawer] = useState(false);
 
     const [visible, setVisible] = useState(false);
     const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -53,22 +46,21 @@ export default function ShowClass({
         }
     }, [groupModules]);
 
-
     useEffect(() => {
-        if(ModuleCreationSuccess ){
+        if (ModuleCreationSuccess) {
             const timer = setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
             return () => clearTimeout(timer);
         }
 
-        if(ModuleCreationError){
-            const timer1= setTimeout(()=>{
+        if (ModuleCreationError) {
+            const timer1 = setTimeout(() => {
                 setErrorMessage(null);
             }, 3000);
             return () => clearTimeout(timer1);
         }
-    },[ModuleCreationSuccess, ModuleCreationError])
+    }, [ModuleCreationSuccess, ModuleCreationError]);
 
     // initial for img
 
@@ -90,29 +82,48 @@ export default function ShowClass({
         <>
             <AuthenticatedLayout>
                 <div className="mt-24 ">
-                    
-
                     {successMessage && (
                         <div className="w-1/3 mx-auto mt-10 transition-opacity duration-500 ease-in-out">
-                        <Alert message={successMessage} type="success" showIcon/>
+                            <Alert
+                                message={successMessage}
+                                type="success"
+                                showIcon
+                            />
                         </div>
                     )}
 
                     {ModuleCreationError && (
-
                         <div className="w-1/3 mx-auto mt-10">
-                            <Alert message={ModuleCreationError} type="error" showIcon/>
+                            <Alert
+                                message={ModuleCreationError}
+                                type="error"
+                                showIcon
+                            />
                         </div>
                     )}
+                    {/* edit and create module buttons */}
+                    <div className="flex justify-end mr-5 md:mr-[150px] lg:mr-[300px] mb-4 space-x-4">
+                        <button
+                            type="button"
+                            className="bg-yellow-300 rounded-md px-4 py-2 hover:bg-yellow-500 focus:bg-yellow-500
+               text-sm mt-3"
+                            onClick={() => setOpenEditCourseDrawer(true)}
+                            // onClick={showEditCourseDrawer}
+                        >
+                            <FontAwesomeIcon icon={faPen} className="mr-2" />
+                            Edit Course
+                        </button>
+                    </div>
+
                     <div className="flex flex-col">
-                        <Card className=" py-5 px-40">
+                        <Card className=" py-5 md:px-40">
                             <div className="flex flex-col md:flex-row items-center gap-8 justify-center">
                                 <div className="flex-shrink-0 w-1/4 flex items-center justify-center mr-10">
-                                    {foundCourse && foundCourse.photo ? (
+                                    {foundCourse.photo ? (
                                         <img
-                                            src={foundCourse.photo}
+                                            src={`/storage/${foundCourse.photo}`}
                                             alt={foundCourse.course_name}
-                                            className="w-full h-48 object-cover rounded-lg border"
+                                            className="w-[300px] md:w-[400px] h-52 object-cover rounded-lg border"
                                         />
                                     ) : (
                                         <div className="flex items-center justify-center w-full h-48 bg-gray-200 rounded-lg border text-3xl font-bold text-gray-500">
@@ -165,9 +176,9 @@ export default function ShowClass({
                             </div>
                         </Card>
 
-                        <Card className="mt-10  pr-40">
+                        <Card className="mt-10">
                             {/* button container */}
-                            <div className="flex flex-row justify-end space-x-4 mr-48">
+                            <div className="flex justify-end mr-5 md:mr-[150px] lg:mr-[280px] mb-4 space-x-4">
                                 <button
                                     type="submit"
                                     className=" bg-yellow-300  rounded-md px-4 py-2
@@ -208,6 +219,20 @@ export default function ShowClass({
                                         groupModules={groupModules || null}
                                         onCloseDrawer={closeDrawer}
                                     ></CourseModuleCreationForm>
+                                </Drawer>
+
+                                <Drawer
+                                    title="Edit Course"
+                                    width={700}
+                                    closable={{ "aria-label": "Close Button" }}
+                                    open={openEditCourseDrawer}
+                                    onClose={() =>
+                                        setOpenEditCourseDrawer(false)
+                                    }
+                                >
+                                    <CourseEditForm
+                                        foundCourse={foundCourse}
+                                    ></CourseEditForm>
                                 </Drawer>
                             </div>
 

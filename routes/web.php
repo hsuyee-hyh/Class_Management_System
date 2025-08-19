@@ -4,6 +4,7 @@ require __DIR__ . '/auth.php';
 
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -21,9 +22,10 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/', function () {
-    return Inertia::render('Home/Home');
-})->middleware(['auth', 'verified'])->name('home');
+
+
+Route::get('/', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
+
 
 // reset password
 Route::get('/forgot-password', function () {
@@ -63,8 +65,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/course/create', [CourseController::class, 'create'])->name('course.create');
     Route::post('/course/create', [CourseController::class, 'store'])->name('course.store');
     Route::get('/course/search', [CourseController::class, 'search'])->name('course.search');
-    Route::get('course/show/{id}', [CourseController::class, 'show'])->name('course.show');
-    Route::post('course/show/{id}', [ModuleController::class, 'store'])->name('course.module.store');
+    Route::get('course/edit/{id}', [CourseController::class, 'show'])->name('course.edit');
+    Route::post('course/edit/{id}', [CourseController::class, 'update'])->name('course.update');
+    
+    // Route::post('course/edit/{id}', [ModuleController::class, 'store'])->name('course.module.store');
 
     Route::get('/course/module/create', [ModuleController::class, 'create'])->name('course.module.create');
     Route::post('/course/module/upload-video', [ModuleController::class, 'uploadVideo'])

@@ -14,6 +14,10 @@ use Inertia\Inertia;
 class CourseService
 {
 
+    public function getAllCourses()
+    {
+        return Course::latest()->paginate(3);
+    }
     public function createCourse(CourseRequest $request)
     {
         try {
@@ -21,8 +25,8 @@ class CourseService
             $formattedEndDate = Carbon::parse($request->end_date)->format('Y-m-d');
 
             $validatedData = $request->validated();            // create and insert
-            
-            $photoPath = $validatedData['coursephoto'] ? $validatedData['coursephoto']->store('course-photos', 'public') : null;
+
+            $photoPath = $validatedData['coursephoto'] ? $validatedData['coursephoto']->store('course/course-photos', 'public') : null;
             if ($photoPath) {
                 Log::info("Photo Path", ["photoPath" => $photoPath]);
             } else {
@@ -74,15 +78,16 @@ class CourseService
         }
     }
 
-    public function showCourse($courseId){
-        try{
+    public function showCourse($courseId)
+    {
+        try {
             $course = Course::findOrFail($courseId);
             // $course = Course::with('modules')->findOrFail($courseId);
             $groupedModules = Module::with('course')
                 ->where('course_id', $courseId)
                 ->get()
                 ->groupBy('module_no');
-            if(!$course){
+            if (!$course) {
                 Log::warning("@CourseService.showCourse", [
                     "courseNotFound" => "Course not found"
                 ]);
@@ -95,13 +100,50 @@ class CourseService
                 "groupModule" => $groupedModules
             ];
             return $data;
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error("@CourseService.showCourse", [
                 "courseShowError" => $e->getMessage()
             ]);
             return Inertia::render('Classes/ShowClass', [
                 'courseShowError' => "Failed to load course details. Please try again."
             ]);
+        }
+    }
+
+    public function updateCourse($courseId, Request $request, CourseRequest $courseRequest)
+    {
+        try {
+
+            $formattedStartDate = Carbon::parse($request->startdate)->format('Y-m-d');
+            $formattedEndDate = Carbon::parse($request->enddate)->format('Y-m-d');
+
+            $foundCourse = Course::findOrFail($courseId);
+            // if ($request->input('formName') == 'editForm') {
+            $validatedData = $courseRequest->validated();
+
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('course/course-photos', 'public');
+                $validatedData['photo'] = $photoPath;
+
+                Log::info("CourseController@Update", [
+                    "photoPath" => $photoPath
+                ]);
+            }
+            // dd($validatedData);
+            return $foundCourse->update([
+                'course_name' => $validatedData['coursename'],
+                'description' => $validatedData['description'],
+                'photo' => $validatedData['photo'],
+                'start_date' => $formattedStartDate,
+                'end_date' => $formattedEndDate,
+                'academic_year' => $validatedData['academicyear'],
+                'semester' => $validatedData['semester'],
+            ]);
+        } catch (Exception $e) {
+            Log::error("CourseService@updateCourse", [
+                "error" => $e->getMessage()
+            ]);
+            return $e->getMessage();
         }
     }
 }

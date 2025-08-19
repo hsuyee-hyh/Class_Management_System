@@ -10,4 +10,7 @@ export default defineConfig({
         }),
         react(),
     ],
+    optimizeDeps: {
+       exclude: ['lightningcss'], // <- help skip this
+     },
 });

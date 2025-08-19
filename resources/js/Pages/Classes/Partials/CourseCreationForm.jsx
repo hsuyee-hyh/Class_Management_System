@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Drawer } from "antd";
 import { useState, useEffect } from "react";
 import { router, useForm } from "@inertiajs/react";
-import CourseModuleCreationForm from "./CourseModuleCreationForm";
 import FileInput from "@/Components/Form/FileInput";
 
 export default function CourseCreationForm({
@@ -231,17 +230,17 @@ export default function CourseCreationForm({
                 </div>
             </form>
 
-            {/* <div>
-                <Drawer
-                    title="Create Module"
-                    width={700}
-                    closable={{ "aria-label": "Close Button" }}
-                    open={openDrawer}
-                    onClose={closeDrawer}
-                >
-                    <CourseModuleCreationForm></CourseModuleCreationForm>
-                </Drawer>
-            </div> */}
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
         </>
     );
 }

@@ -3,7 +3,6 @@ import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { Alert, Button, message, Modal, Progress, Upload } from "antd";
 import axios from "axios";
 import { useState } from "react";
-import { Inertia } from "@inertiajs/inertia";
 import { usePage, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 

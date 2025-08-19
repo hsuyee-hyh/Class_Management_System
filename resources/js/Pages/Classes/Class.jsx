@@ -126,7 +126,7 @@ export default function Course() {
     const handleShowButton = (course) => {
        
         router.get(
-            route("course.show", course.id),
+            route("course.edit", course.id),
             {},
             {
                 preserveState: true,
@@ -171,16 +171,16 @@ export default function Course() {
             key: "actions",
             render: (text, record) => (
                 <Space>
-                    <Button
-                        type="button"
-                        onClick={() => handleShowButton(record)}
-                        className="text-yellow-600"
-                    >
-                        Show
-                    </Button>
+                   {/* <Button */}
+                        {/* // type="button" */}
+                        {/* // onClick={() => handleShowButton(record)} */}
+                        {/* // className="text-yellow-600" */}
+                    {/* // > */}
+                    {/* //     Show */}
+                    {/* // </Button> */}
                     <Button
                         type="link"
-                        onClick={() => console.log("Edit button clicked")}
+                        onClick={() => handleShowButton(record)}
                     >
                         Edit
                     </Button>

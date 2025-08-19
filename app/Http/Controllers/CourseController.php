@@ -31,6 +31,9 @@ class CourseController extends Controller
     {
         return Inertia::render('Classes/Class');
     }
+
+
+
     public function store(CourseRequest $request)
     {
         try {
@@ -73,10 +76,31 @@ class CourseController extends Controller
     public function show($id)
     {
         $data = $this->courseService->showCourse($id);
-        
+
         return Inertia::render('Classes/ShowClass', [
             'foundCourse' => $data['course'],
             'groupModules' => $data['groupModule'],
         ]);
+    }
+
+    public function update(Request $request, CourseRequest $courseRequest,  $id)
+    {
+        try {
+            $wasUpdated = $this->courseService->updateCourse($id, $request, $courseRequest);
+            if (!$wasUpdated) {
+                throw new Exception("course update not successful");
+            }
+            return redirect()->back()->with([
+                'courseUpdateSuccess' => "course successfully updated"
+            ]);
+            // }
+        } catch (Exception $e) {
+            Log::error("CourseController@update", [
+                "error" => $e->getMessage()
+            ]);
+            return redirect()->back()->withErrors([
+                'courseUpdateFailed' => "course update failed"
+            ]);
+        }
     }
 }
