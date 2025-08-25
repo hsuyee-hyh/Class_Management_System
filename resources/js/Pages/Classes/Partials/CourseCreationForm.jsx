@@ -4,7 +4,7 @@ import Selection from "@/Components/Form/Selection";
 import TextInput from "@/Components/Form/TextInput";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Drawer } from "antd";
+import { Drawer, message } from "antd";
 import { useState, useEffect } from "react";
 import { router, useForm } from "@inertiajs/react";
 import FileInput from "@/Components/Form/FileInput";
@@ -60,11 +60,12 @@ export default function CourseCreationForm({
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        post(
+        router.post(
             route("course.store"),
             {
                 coursename: data.coursename,
                 description: data.description,
+                coursephoto: data.coursephoto,
                 academicyear: data.academicyear,
                 startdate: data.startdate,
                 enddate: data.enddate,
@@ -74,6 +75,7 @@ export default function CourseCreationForm({
                 forceFormData: true,
                 preserveState: false,
                 onSuccess: () => {
+                    router.get(route('course'));
                     message.success("Course created successfully");
                 },
                 onError: () => {
@@ -82,7 +84,7 @@ export default function CourseCreationForm({
             }
         );
         // setOpenDrawer(false);
-        get(route("course.show"));
+        router.get(route("course.show"));
         reset();
     };
 
@@ -118,17 +120,17 @@ export default function CourseCreationForm({
                 encType="multipart/form-data"
                 className="space-y-4"
             >
-                {/* <div className="flex flex-row justify-end"> */}
-                    {/* <button */}
-                        {/* // type="button" */}
-                        {/* // className="bg-yellow-300 hover:bg-yellow-500 focus:bg-yellow-500 */}
-                {/* // rounded-lg px-5 py-2" */}
-                        {/* // onClick={() => showDrawer()} */}
-                    {/* // > */}
-                        {/* <FontAwesomeIcon icon={faPlus} className="mr-2" /> */}
-                        {/* Create Module */}
-                    {/* </button> */}
-                {/* </div> */}
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
 
                 <TextInput
                     label="Course Name"

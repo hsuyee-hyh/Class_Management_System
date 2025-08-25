@@ -18,7 +18,7 @@ export default function ResultTable({
                     current: data.current_page,
                     pageSize: data.per_page,
                     total: data.total,
-                    onChange: {onPageChange},
+                    onChange: onPageChange,
                 }}
             />
             </div>

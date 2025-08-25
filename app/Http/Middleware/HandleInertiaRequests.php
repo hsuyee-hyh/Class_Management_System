@@ -64,8 +64,11 @@ class HandleInertiaRequests extends Middleware
 
             'createdCourse' => $request->session()->get("createdCourse"),
 
+            'moduleExisted' => $request->session()->get("moduleExisted"),
             'ModuleCreationSuccess' => $request->session()->get("ModuleCreationSuccess"),
             'ModuleCreationError' => $request->session()->get("ModuleCreationError"),
+
+            'deletePresentationSuccess' => $request->session()->get('deletePresentationSuccess'),
             /**
              * Here's an example for sharing custom prop.
              */

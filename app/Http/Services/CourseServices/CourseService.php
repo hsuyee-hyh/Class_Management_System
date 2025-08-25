@@ -24,13 +24,18 @@ class CourseService
             $formattedStartDate = Carbon::parse($request->start_date)->format('Y-m-d');
             $formattedEndDate = Carbon::parse($request->end_date)->format('Y-m-d');
 
-            $validatedData = $request->validated();            // create and insert
+            $validatedData = $request->validated();
 
-            $photoPath = $validatedData['coursephoto'] ? $validatedData['coursephoto']->store('course/course-photos', 'public') : null;
-            if ($photoPath) {
-                Log::info("Photo Path", ["photoPath" => $photoPath]);
-            } else {
-                Log::info("No photo uploaded.");
+            // dd($request);
+            // dd($validatedData);
+
+            if (array_key_exists('coursephoto', $validatedData)) {
+                $photoPath = $validatedData['coursephoto'] ? $validatedData['coursephoto']->store('course/course-photos', 'public') : null;
+                if ($photoPath) {
+                    Log::info("Photo Path", ["photoPath" => $photoPath]);
+                } else {
+                    Log::info("No photo uploaded.");
+                }
             }
 
             $course = Course::create([
@@ -117,9 +122,16 @@ class CourseService
             $formattedStartDate = Carbon::parse($request->startdate)->format('Y-m-d');
             $formattedEndDate = Carbon::parse($request->enddate)->format('Y-m-d');
 
+            // Log::info("CourseService@updateCourse", [
+            // 'photo' => $request->hasFile('photo'),
+            // 'startdate' => $formattedStartDate,
+            // 'enddate' => $formattedEndDate,
+            // ]);
+
             $foundCourse = Course::findOrFail($courseId);
             // if ($request->input('formName') == 'editForm') {
             $validatedData = $courseRequest->validated();
+            // dd($validatedData);
 
             if ($request->hasFile('photo')) {
                 $photoPath = $request->file('photo')->store('course/course-photos', 'public');

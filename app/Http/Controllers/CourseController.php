@@ -38,10 +38,14 @@ class CourseController extends Controller
     {
         try {
             $course = $this->courseService->createCourse($request);
-            return Inertia::render('Classes/Class', [
+            return redirect()->back()->with([
                 'createdCourse' => $course,
-                'CourseCreationSuccess' => "Course created successfully."
+                'CourseCreationSuccess' => "Course is created successfully."
             ]);
+            // return Inertia::render('Classes/Class', [
+                // 'createdCourse' => $course,
+                // 'CourseCreationSuccess' => "Course created successfully."
+            // ]);
         } catch (Exception $e) {
             Log::error("Course Creation Error @CourseController.store", [
                 "CourseCreationError" => $e->getMessage()
@@ -101,6 +105,44 @@ class CourseController extends Controller
             return redirect()->back()->withErrors([
                 'courseUpdateFailed' => "course update failed"
             ]);
+        }
+    }
+
+
+    public function delete($courseId)
+    {
+        try {
+            $course = Course::where('id', $courseId)->first();
+
+            if (!$course) {
+                return redirect()->back()->withErrors([
+                    'courseNotFoundError' => 'Course not found',
+                ]);
+                // return response()->json([
+                // 'error' => "course not found."
+                // ], 404);
+            }
+
+            $course->delete();
+            Log::info("CourseController@delete", [
+                'success' => 'course delete success',
+            ]);
+            return redirect()->back()->with([
+                'courseDeleteSuccess' => 'Course is deleted successfully',
+            ]);
+            // return response()->json([
+            // 'success' => "course is deleted successfully"
+            // ]);
+        } catch (Exception $e) {
+            Log::error("CourseController@delete", [
+                'error' => $e->getMessage(),
+            ]);
+            return redirect()->back()->withErrors([
+                'courseDeleteError' => 'Something went wrong. Try again later.'
+            ]);
+            // return response()->json([
+            // 'error' => "course not found."
+            // ], 500);
         }
     }
 }

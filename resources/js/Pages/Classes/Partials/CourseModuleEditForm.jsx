@@ -1,37 +1,73 @@
 import TextInput from "@/Components/Form/TextInput";
-import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { Alert, Button, message, Modal, Progress, Upload } from "antd";
+import {
+    EyeOutlined,
+    FilePdfOutlined,
+    PlusOutlined,
+    UploadOutlined,
+} from "@ant-design/icons";
+import { Alert, Button, message, Modal, Progress, Space, Upload } from "antd";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePage, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 
-export default function CourseModuleCreationForm({
-    foundCourse,
-    groupModules,
-    onCloseDrawer,
-}) {
+export default function CourseModuleEditForm({ foundCourse, module }) {
     const { errors } = useForm();
     const { ModuleCreationSuccess, ModuleCreationError } = usePage().props;
 
     const [courseId, setCourseId] = useState(foundCourse.id);
-    const [moduleNo, setModuleNo] = useState(null);
-    const [title, setTitle] = useState("");
+    const [moduleNo, setModuleNo] = useState(module.module_no);
+    const [title, setTitle] = useState(module.title);
 
-    const [videoFiles, setVideoFiles] = useState([]); // local File objects
+    const [videoFiles, setVideoFiles] = useState(module?.video_path || []); // local File objects
     const [uploading, setUploading] = useState(false);
-    const [videoPaths, setVideoPaths] = useState([]); // after uploaded videoPaths from backend
-    const [videoOriginPaths, setVideoOriginPaths] = useState([]); // original file names after upload
-    const [uploadProgress, setUploadProgress] = useState({}); // uid: percent
+    const [videoPaths, setVideoPaths] = useState(module?.video_path || []); // after uploaded videoPaths from backend
+    const [videoOriginPaths, setVideoOriginPaths] = useState(module?.video_origin_path || []); // original file names after upload
+// const [uploadProgress, setUploadProgress] = useState({}); // uid: percent
 
-    const [presentationFile, setPresentationFile] = useState(null); // upload
-    const [presentationFilePath, setPresentationFilePath] = useState(""); // submit
-    const [presentationOriginPath, setPresentationOriginPath] = useState(""); // original file name after upload
+    const [presentationFile, setPresentationFile] = useState(
+        module?.presentation_path
+    ); // upload
+    const [presentationFilePath, setPresentationFilePath] = useState(
+        module?.presentation_path || ""
+    ); // submit
+    const [presentationOriginPath, setPresentationOriginPath] = useState(module?.presentation_origin_path || ""); // original file name after upload
+   
 
     const [previewVisible, setPreviewVisible] = useState(false);
     const [previewImage, setPreviewImage] = useState("");
     const [previewTitle, setPreviewTitle] = useState("");
-    const [fileList, setFileList] = useState([]);
+    const [fileList, setFileList] = useState([]); // upload video lists
+
+    const [visible, setVisible] = useState(true);
+    const [videoVisible, setVideoVisible] = useState(true);
+    const [videos, setVideos] = useState(module.video_origin_path);
+
+    // each module state
+    useEffect(() => {
+        setModuleNo(module.module_no);
+        setTitle(module.title);
+        setPresentationFile(module.presentation_path);
+        setPresentationFilePath(module.presentation_path || "");
+        setPresentationOriginPath(module.presentation_origin_path || "");
+        setFileList(module?.video_path || []);
+        setVideos(module.video_origin_path || []);
+    }, [module]);
+
+    useEffect(() => {
+        if (module?.video_origin_path?.length && module?.video_path.length) {
+            const initialFiles = module.video_origin_path.map(
+                (name, index) => ({
+                    uid: `existing-${index}`,
+                    name: name,
+                    url: module.video_path[index],
+                    isExisting: true,
+                    status: "done", // Mark as done
+                })
+            );
+            setFileList(initialFiles);
+        }
+    }, [module]);
 
     // get CSRF token from meta tag
     const csrfToken = document
@@ -49,6 +85,7 @@ export default function CourseModuleCreationForm({
 
     const handleFileChange = ({ fileList }) => {
         setFileList(fileList);
+        // setNewVideos(fileList);
         // Set all uploaded files as an array in form data
         const selectedVideos = fileList
             .map((file) => file.originFileObj)
@@ -87,49 +124,55 @@ export default function CourseModuleCreationForm({
                             ...prev,
                             [file.uid]: percent,
                         }));
-                        if (onProgress) onProgress({ percent });
+                        if (onProgress) {
+                            onProgress({ percent }, file);
+                        }
                     },
                 }
             );
-            //  update fileList with video path
-            // append VideoPaths to send when form submit
-            setVideoPaths((prev) => [...prev, response?.data?.videoPath]);
-            setVideoOriginPaths((prev) => [
-                ...prev,
-                response?.data?.videoOriginPath,
-            ]);
-            // setFileList((prevList) =>
-            // prevList.map((f) =>
-            // f.uid === file.uid
-            // ? {
-            //   ...f,
-            //   status: "done",
-            //   }
-            // : f
-            // )
-            // );
+
+            // Update the file in fileList with response data
+            setFileList((prevList) =>
+                prevList.map((f) =>
+                    f.uid === file.uid
+                        ? {
+                              ...f,
+                              status: "done",
+                              url: response.data.videoPath,
+                              name: response.data.videoOriginPath,
+                              response: response.data, // Store the full response
+                          }
+                        : f
+                )
+            );
 
             message.success(`${file.name} uploaded successfully`);
+            console.log("video upload filelist: ", fileList);
             setUploading(false);
             setUploadProgress((prev) => ({ ...prev, [file.uid]: 100 }));
-            if (onSuccess) onSuccess(null, file);
+            if (onSuccess) onSuccess(response.data, file);
         } catch (error) {
-            if (error.response && error.response.status === 403) {
+            if (err.response && err.response.status === 403) {
                 message.error("Unauthorized: Please login to upload videos.");
             } else if (
-                error.response?.status === 419 ||
-                error.response?.data?.message?.includes("CSRF")
+                err.response?.status === 419 ||
+                err.response?.data?.message?.includes("CSRF")
             ) {
                 message.error("Session Expired. Please Refresh the Page.");
             } else {
                 message.error(`${file.name} upload failed.`);
             }
+
             setUploading(false);
             setUploadProgress((prev) => ({ ...prev, [file.uid]: 0 }));
             if (onError) onError(error);
         }
     };
 
+    const handleVideoRemove = (file) => {
+        setFileList((prevList) => prevList.filter((f) => f.uid !== file.uid));
+        message.success("Video is removed.");
+    };
     // handle file upload for presentation files
     const handleFileUpload = async ({ file, onSuccess, onError }) => {
         const formData = new FormData();
@@ -151,7 +194,7 @@ export default function CourseModuleCreationForm({
                         const percent = Math.round(
                             (event.loaded / event.total) * 100
                         );
-                        // setProgress(percent);
+                        setProgress(percent);
                     },
                 }
             );
@@ -165,8 +208,8 @@ export default function CourseModuleCreationForm({
             message.success("File uploaded successfully");
             onSuccess(response.data);
         } catch (err) {
-            if (err.response && error.response.status === 403) {
-                message.error("Unauthorized: Please login to upload videos.");
+            if (err.response && err.response.status === 403) {
+                message.error("Unauthorized: Please login to upload file.");
             } else if (
                 err.response?.status === 419 ||
                 err.response?.data?.message?.includes("CSRF")
@@ -195,22 +238,6 @@ export default function CourseModuleCreationForm({
         return true;
     };
 
-    // const beforeUpload = (file) => {
-    //     const newName = `module-${data.moduleno}-video.mp4`;
-    //     const renamedFile = new File([file], newName, {
-    //         type: file.type,
-    //     });
-    //     setData("video", renamedFile);
-    //     setFileList((prevList) => [
-    //         ...prevList,
-    //         {
-    //             ...file,
-    //             originFileObj: renamedFile,
-    //             name: newName,
-    //         },
-    //     ]);
-    // };
-
     const uploadButton = (
         <div>
             <PlusOutlined />
@@ -218,27 +245,44 @@ export default function CourseModuleCreationForm({
         </div>
     );
 
+    // Update your handleFormSubmit function
     const handleFormSubmit = (e) => {
         e.preventDefault();
 
         const formData = new FormData();
         formData.append("courseId", courseId);
-        formData.append("formName", "createForm");
+        formData.append("formName", "editForm");
         formData.append("moduleNo", moduleNo);
+
         if (title) {
             formData.append("title", title);
         }
-        // got uploaded successful video file path links
-        if (videoPaths.length > 0) {
-            videoPaths.forEach((url, index) => {
-                formData.append(`videoFiles[${index}]`, url); //append to db
-            });
-        }
-        if (videoOriginPaths.length > 0) {
-            videoOriginPaths.forEach((url, index) => {
-                formData.append(`videoOriginPaths[${index}]`, url);
-            });
-        }
+
+        // Handle video files - both existing and new
+        fileList.forEach((file, index) => {
+            if (file.isExisting) {
+                // For existing files, use the stored URL and name
+                formData.append(`videoFiles[${index}]`, file.url);
+                formData.append(`videoOriginPaths[${index}]`, file.name);
+            } else if (file.response) {
+                // For newly uploaded files that completed upload
+                formData.append(
+                    `videoFiles[${index}]`,
+                    file.response.videoPath
+                );
+                formData.append(
+                    `videoOriginPaths[${index}]`,
+                    file.response.videoOriginPath
+                );
+            } else if (file.originFileObj) {
+                // For files that are still uploading or haven't been processed
+                // You might want to handle this case - either wait for upload or show error
+                message.error(
+                    `File ${file.name} is still uploading. Please wait.`
+                );
+                return; // Prevent form submission
+            }
+        });
 
         if (presentationFilePath) {
             formData.append("presentationFilePath", presentationFilePath);
@@ -252,28 +296,47 @@ export default function CourseModuleCreationForm({
             forceFormData: true,
             preserveState: false,
             onSuccess: () => {
-                // console.log("onSucess message alert");
-                // message.success("Module created successfully");
-                // props.onCloseDrawer();
-                // form.resetFields();
-                // props.onFlashMessageShow("Module created successfully");
-                // window.location.href = route("course.show", foundCourse.id);
+                message.success("Module updated successfully");
             },
             onError: (errors) => {
-                message.error("Module creation failed");
-                // console.log("Modle Creation Error: ", errors);
-                // props.onFlashMessageShow("Module creation failed");
+                message.error("Module update failed");
             },
         });
-        // router.get(route("course.edit", foundCourse.id));
-        // reset();
-        // resetForm();
+    };
+
+    const handleFileRemove = async (filePath) => {
+        try {
+            const url = route("course.module.deletePresentation", {
+                moduleno: moduleNo,
+                filepath: filePath,
+            });
+
+            const response = await axios.delete(url, {
+                headers: {
+                    "X-Inertia": "false",
+                    Accept: "application/json",
+                },
+                withCredentials: true, // Send cookies if needed
+            });
+
+            // On success, update local state and show message
+            setPresentationFilePath(null);
+            setPresentationFile(null);
+            setPresentationOriginPath(null);
+
+            message.success("File removed successfully");
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                message.error("File not found.");
+            } else {
+                message.error("Failed to remove file.");
+            }
+        }
     };
 
     return (
         <>
             <div>
-                {console.log(ModuleCreationSuccess)}
                 {ModuleCreationSuccess && (
                     <Alert
                         message={ModuleCreationSuccess}
@@ -296,15 +359,11 @@ export default function CourseModuleCreationForm({
                             name="courseId"
                             value={foundCourse.id}
                         />
-                        <input
-                            type="hidden"
-                            name="formName"
-                            value="createForm"
-                        />
+                        <input type="hidden" name="formName" value="editForm" />
                         <TextInput
                             label="Module No (eg.1)"
                             name="moduleNo"
-                            value={moduleNo}
+                            value={module.module_no}
                             onChange={(e) => setModuleNo(e.target.value)}
                             error={errors.moduleno}
                             required
@@ -322,40 +381,60 @@ export default function CourseModuleCreationForm({
                         />
                     </div>
 
+                    {/* video file  */}
                     <div className="mt-3">
                         <label className="mb-2">Upload video</label>
                         <div className="text-yellow-500 font-semibold">
                             ( ** mp4 file only ** )
                         </div>
+
                         <div className="border border-gray-400 h-70 rounded-lg p-5 mt-2">
                             {errors.videoFiles && (
                                 <div className="text-red-500 text-sm">
                                     {errors.videoFiles}
                                 </div>
                             )}
+
                             <Upload
                                 name="videoFiles"
                                 listType="picture-card"
                                 fileList={fileList}
                                 onPreview={handlePreview}
-                                onChange={handleFileChange}
+                                onChange={({ fileList }) =>
+                                    setFileList(fileList)
+                                }
+                                onRemove={handleVideoRemove}
                                 multiple={false}
                                 customRequest={handleVideoUpload}
+                                progress={{
+                                    strokeWidth: 3,
+                                    showInfo: true,
+                                }}
+                                showPreviewIcon={false}
+                                beforeUpload={(file, fileList) => {
+                                    if (fileList.length >= 8) {
+                                        message.error(
+                                            "You can only upload up to 8 videos."
+                                        );
+                                        return Upload.LIST_IGNORE;
+                                    }
+                                }}
                             >
-                                {fileList.length >= 8 ? null : uploadButton}
+                                {fileList?.length >= 8 ? null : uploadButton}
                             </Upload>
+
                             {/* Progress bar for each uploading file */}
-                            {fileList.map((file) =>
-                                uploadProgress[file.uid] &&
-                                uploadProgress[file.uid] < 100 ? (
+                            {/* {fileList.map((file) => {
+                                return uploadProgress[file.uid] &&
+                                    uploadProgress[file.uid] < 100 ? (
                                     <div key={file.uid} className="mt-2">
                                         <Progress
                                             percent={uploadProgress[file.uid]}
                                             size="small"
                                         />
                                     </div>
-                                ) : null
-                            )}
+                                ) : null;
+                            })} */}
 
                             <Modal
                                 open={previewVisible}
@@ -387,9 +466,13 @@ export default function CourseModuleCreationForm({
                         </div>
                     </div>
 
+                    {/* pdf file  */}
                     <div className="mt-3 flex flex-col">
                         <label>
                             Upload Presentation File{" "}
+                            <span className="text-yellow-600">
+                                (only 1 file can upload)
+                            </span>
                             <div className="text-yellow-500 font-semibold">
                                 ( ** PDF file only **)
                             </div>
@@ -400,25 +483,47 @@ export default function CourseModuleCreationForm({
                         >
                             <Upload
                                 name="presentationFile"
-                                // action
                                 customRequest={handleFileUpload}
                                 accept=".pdf"
                                 maxCount={1}
                                 beforeUpload={beforePresentationFileUpload}
+                                onRemove={() =>
+                                    handleFileRemove(presentationFilePath)
+                                }
+                                fileList={
+                                    presentationFilePath
+                                        ? [
+                                              {
+                                                  // uid: 'current-presentation',
+                                                  name:
+                                                      presentationOriginPath ||
+                                                      module.presentation_origin_path ||
+                                                      "Presentation File",
+                                                  status: "done",
+                                                  url: presentationFilePath,
+                                              },
+                                          ]
+                                        : []
+                                }
                             >
                                 <Button icon={<UploadOutlined />}>
                                     Upload File
                                 </Button>
                             </Upload>
+
+                            
+
                         </div>
                     </div>
+
+                    {/* buttons  */}
                     <div className="flex flex-row justify-end space-x-4">
                         <button
                             type="submit"
                             className="w-20 bg-yellow-300  rounded-md px-4 py-2
                         hover:bg-yellow-500 focus:bg-yellow-500 mt-3"
                         >
-                            Create
+                            Update
                         </button>
 
                         <button

@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -65,16 +66,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/course/create', [CourseController::class, 'create'])->name('course.create');
     Route::post('/course/create', [CourseController::class, 'store'])->name('course.store');
     Route::get('/course/search', [CourseController::class, 'search'])->name('course.search');
+    
     Route::get('course/edit/{id}', [CourseController::class, 'show'])->name('course.edit');
     Route::post('course/edit/{id}', [CourseController::class, 'update'])->name('course.update');
+    Route::delete('course/delete/{id}', [CourseController::class, 'delete'])->name('course.delete');
     
-    // Route::post('course/edit/{id}', [ModuleController::class, 'store'])->name('course.module.store');
+    Route::post('course/edit/{id}/module', [ModuleController::class, 'store'])->name('course.module.store');
+    Route::delete('course/delete/{courseid}/module/{moduleno}',[ModuleController::class, 'deleteModule'])
+        ->name('course.module.delete');
+   
+   
+   
+    // Route::post('course/edit/{id}', [ModuleController::class, 'store'])->name('course')
 
     Route::get('/course/module/create', [ModuleController::class, 'create'])->name('course.module.create');
     Route::post('/course/module/upload-video', [ModuleController::class, 'uploadVideo'])
         ->name('course.module.uploadVideo');
     Route::post('/course/module/upload-presentation', [ModuleController::class, 'uploadPresentation'])
         ->name('course.module.uploadPresentation');
+    Route::delete('/course/module/{moduleno}/delete-presentation/{filepath}', [ModuleController::class, 'deletePresentation'])
+        ->where('filepath', '.*')
+        ->withoutMiddleware([HandleInertiaRequests::class])
+        ->name('course.module.deletePresentation');
+
+    // Route::delete('/course/{moduleNo}/videos/{videoIndex}', [ModuleController::class, 'deleteVideo'])->name('course.module.deleteVideo');
 
 });
 // Route::post('/course', [ModuleController::class, 'store'])

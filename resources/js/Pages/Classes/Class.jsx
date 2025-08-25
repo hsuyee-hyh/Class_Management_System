@@ -15,6 +15,8 @@ import {
     Popconfirm,
     Space,
     Table,
+    Modal,
+    message,
 } from "antd";
 import { useEffect, useState } from "react";
 import { useForm, usePage, router } from "@inertiajs/react";
@@ -22,6 +24,7 @@ import { useForm, usePage, router } from "@inertiajs/react";
 import CourseSearchForm from "./Partials/CourseSearchForm";
 import CourseCreationForm from "./Partials/CourseCreationForm";
 import ResultTable from "./Partials/ResultTable";
+import { select } from "@material-tailwind/react";
 
 export default function Course() {
     const {
@@ -40,7 +43,8 @@ export default function Course() {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [search, setSearch] = useState(false);
 
-    console.log("Created Course from Class: ", createdCourse);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null); // Track which course to delete
 
     // search: data
     const {
@@ -70,6 +74,7 @@ export default function Course() {
         { label: "1st Semester", value: "1st Semester" },
         { label: "2nd Semester", value: "2nd Semester" },
     ];
+
     // search: handle data change
     const handleSearchDataChange = (e) => {
         setSearchData(e.target.name, e.target.value);
@@ -93,6 +98,7 @@ export default function Course() {
             }
         );
     };
+
     // search : reset
     const handleReset = () => {
         setSearch(false);
@@ -114,6 +120,7 @@ export default function Course() {
         setOpenDrawer(true);
         router.get(route("course.create"), {}, { preserveState: true });
     };
+
     const closeDrawer = () => {
         setOpenDrawer(false);
         router.get(
@@ -124,7 +131,6 @@ export default function Course() {
     };
 
     const handleShowButton = (course) => {
-       
         router.get(
             route("course.edit", course.id),
             {},
@@ -132,6 +138,36 @@ export default function Course() {
                 preserveState: true,
             }
         );
+    };
+
+    // delete Modal
+    const handleDeleteButton = (course) => {
+        setSelectedCourse(course);
+        setIsModalOpen(true);
+        console.log("selected course: ", course);
+    };
+
+    const handleOk = async () => {
+        router.delete(route("course.delete", { id: selectedCourse.id }), {
+            onSuccess: () => {
+                setIsModalOpen(false);
+                message.success("Course is deleted successfully.");
+            },
+            onError: (errors) => {
+                if (errors.courseNotFoundError) {
+                    message.error(errors.courseNotFoundError);
+                } else if (errors.courseDeleteError) {
+                    message.error(errors.courseDeleteError);
+                } else {
+                    message.error("Failed to delete the course.");
+                }
+            },
+        });
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        setSelectedCourse(null);
     };
 
     // table: table list
@@ -171,29 +207,18 @@ export default function Course() {
             key: "actions",
             render: (text, record) => (
                 <Space>
-                   {/* <Button */}
-                        {/* // type="button" */}
-                        {/* // onClick={() => handleShowButton(record)} */}
-                        {/* // className="text-yellow-600" */}
-                    {/* // > */}
-                    {/* //     Show */}
-                    {/* // </Button> */}
                     <Button
                         type="link"
                         onClick={() => handleShowButton(record)}
                     >
                         Edit
                     </Button>
-                    <Popconfirm
-                        title="Are you sure to delete?"
-                        onConfirm={() => console.log("delete clicked")}
-                        okText="Yes"
-                        cancelText="No"
+                    <Button
+                        className="border-none text-red-600 hover:text-red-800"
+                        onClick={() => handleDeleteButton(record)}
                     >
-                        <Button type="link" danger>
-                            Delete
-                        </Button>
-                    </Popconfirm>
+                        Delete
+                    </Button>
                 </Space>
             ),
         },
@@ -201,7 +226,7 @@ export default function Course() {
 
     // table: pagination page
     const handlePageChange = (page, pageSize) => {
-        Inertia.get(route("course.select"), { page }, { preserveState: true });
+        router.get(route("course"), { page }, { preserveState: true });
     };
 
     return (
@@ -239,31 +264,6 @@ export default function Course() {
                                 title: "Class List",
                             }}
                         >
-                            {CourseCreationSuccess && (
-                                <>
-                                    <div className="mx-auto mt-10">
-                                        <Alert
-                                            message={CourseCreationSuccess}
-                                            type="success"
-                                            showIcon
-                                            className="mb-4"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            {CourseCreationError && (
-                                <>
-                                    <div className="mx-auto mt-10">
-                                        <Alert
-                                            message={CourseCreationError}
-                                            type="error"
-                                            showIcon
-                                            className="mb-4"
-                                        />
-                                    </div>
-                                </>
-                            )}
                             {/* create button  */}
                             <div className="flex justify-end">
                                 <button
@@ -295,6 +295,8 @@ export default function Course() {
                                     ></CourseCreationForm>
                                 </Drawer>
                             </div>
+
+
                             {/*  Search by className, teachername, academic year/semester */}
                             <ProCard split="vertical" wrap className="">
                                 <ProCard
@@ -345,7 +347,9 @@ export default function Course() {
                                     </div>
                                 </ProCard>
                             </ProCard>
-                            {/* class list table 2 */}
+
+
+                            {/* search list table */}
                             {isSearching && searchList.length > 0 && (
                                 <ResultTable
                                     list={searchList}
@@ -366,11 +370,38 @@ export default function Course() {
                                     list={coursesAllList}
                                     columns={columns}
                                     data={courses}
+                                    onPageChange={handlePageChange}
                                 ></ResultTable>
                             )}
                         </PageContainer>
                     </div>
                 </ConfigProvider>
+
+                {/* Move Modal outside of ConfigProvider to ensure proper rendering */}
+                <Modal
+                    title="Delete Course"
+                    open={isModalOpen}
+                    onCancel={handleCancel}
+                    footer={[
+                        <Button key="back" onClick={handleCancel}>
+                            No
+                        </Button>,
+                        <Button
+                            key="submit"
+                            type="primary"
+                            className="bg-red-600 hover:bg-red-700 focus:bg-red-700 active:bg-red-700 text-white border-none"
+                            onClick={handleOk}
+                        >
+                            Confirm
+                        </Button>,
+                    ]}
+                    centered
+                >
+                    <p>
+                        Are you sure you want to delete the course "
+                        <strong>{selectedCourse?.course_name}</strong>"?
+                    </p>
+                </Modal>
             </AuthenticatedLayout>
         </>
     );

@@ -6,6 +6,7 @@ import { useForm, router, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { message } from "antd";
 
 export default function CourseEditForm({ foundCourse }) {
     const { data, setData, get, post, processing, errors, reset } = useForm({
@@ -66,9 +67,10 @@ export default function CourseEditForm({ foundCourse }) {
 
     // create: form submit
     const handleSubmit = (event) => {
+        console.log("submit clicked");
         event.preventDefault();
 
-        post(
+        router.post(
             route("course.update", { id: foundCourse.id }),
             {
                 formName: "editForm",
@@ -98,10 +100,9 @@ export default function CourseEditForm({ foundCourse }) {
     };
 
     const onClickCancel = () => {
-        
         setOpenDrawer(false);
-        router.get(route('course.edit',{id: foundCourse.id}));
-    }
+        router.get(route("course.edit", { id: foundCourse.id }));
+    };
 
     return (
         <>
@@ -111,8 +112,6 @@ export default function CourseEditForm({ foundCourse }) {
                     encType="multipart/form-data"
                     className="space-y-4"
                 >
-                   
-                   
                     <div className="flex flex-row space-x-10">
                         <div className="ml-5">
                             {!(previewImg || foundCourse.photo) && (
@@ -151,7 +150,7 @@ export default function CourseEditForm({ foundCourse }) {
                                         alt="course-photo"
                                         className="relative rounded-3xl object-cover w-[180px] h-[200px]"
                                     />
-                                    
+
                                     <label
                                         htmlFor="photo1"
                                         className="  w-full flex items-center justify-center text-yellow-500 text-sm bg-white bg-opacity-80 px-2 py-2 rounded-b cursor-pointer"
@@ -199,15 +198,6 @@ export default function CourseEditForm({ foundCourse }) {
                                 error={errors.description}
                                 required
                             />
-
-                           
-                           
-                           
-                           
-                           
-                           
-
-                           
 
                             <TextInput
                                 label="Academic Year"
